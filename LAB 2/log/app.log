@@ -1,0 +1,4 @@
+{"time":"2026-01-06 17:02:32,711","level":"INFO","message":"GET https://jsonplaceholder.typicode.com/posts/1"}
+{"time":"2026-01-06 17:02:32,859","level":"INFO","message":"Post ricevuto: id=1 title=sunt aut facere repellat provident occaecati excepturi optio reprehenderit"}
+{"time":"2026-01-06 17:02:32,860","level":"INFO","message":"POST https://jsonplaceholder.typicode.com/posts"}
+{"time":"2026-01-06 17:02:32,981","level":"INFO","message":"Creato nuovo post con id 101"}

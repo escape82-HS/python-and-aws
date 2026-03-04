@@ -1,0 +1,10 @@
+api:
+  base_url: "https://jsonplaceholder.typicode.com"
+  timeout: 10
+
+logging:
+  level: "INFO"          # DEBUG, INFO, WARNING, ERROR
+  console: true
+  file: "log/app.log"
+  max_bytes: 1_048_576   # 1 MB
+  backup_count: 5

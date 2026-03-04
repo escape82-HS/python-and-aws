@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <title>LAB 2 – Client API YAML</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; background:#f7f7f7; }
+    h1   { color:#0a0a23; }
+    label{ display:block; margin:0.5rem 0 0.2rem; }
+    input, select, button{ padding:0.4rem 0.6rem; font-size:1rem; }
+    button{ background:#0a0a23; color:#fff; border:none; cursor:pointer; }
+    button:disabled{ background:#aaa; cursor:not-allowed; }
+    #error{ color:#b60000; margin-top:1rem; }
+    table{ border-collapse:collapse; margin-top:1.5rem; width:100%; }
+    th,td{ padding:0.5rem; border:1px solid #ccc; text-align:left; }
+    th{ background:#eee; }
+  </style>
+</head>
+<body>
+
+  <h1>LAB 2 – Client API in JavaScript</h1>
+
+  <label for="cfgFile">1) Carica config.yaml:</label>
+  <input  id="cfgFile" type="file" accept=".yaml,.yml" />
+
+  <label for="endPoint">2) Scegli endpoint:</label>
+  <select id="endPoint">
+    <option value="users">/users</option>
+    <option value="posts">/posts</option>
+  </select>
+
+  <button id="btnGo" disabled>3) Scarica dati</button>
+
+  <div id="error"></div>
+  <table id="outTable" hidden>
+    <thead></thead>
+    <tbody></tbody>
+  </table>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+<script>
+  /* ---------- spiegazione linea per linea ---------- */
+  // 1) Dichiaro le variabili globali che serviranno
+  let cfg = {};            // conterrà l’oggetto yaml parsed
+  const fileInput  = document.getElementById('cfgFile');
+  const selEP      = document.getElementById('endPoint');
+  const btnGo      = document.getElementById('btnGo');
+  const errBox     = document.getElementById('error');
+  const table      = document.getElementById('outTable');
+
+  // 2) Quando l’utente seleziona il file YAML…
+  fileInput.addEventListener('change', handleYaml);
+
+  // 3) Quando preme il bottone…
+  btnGo.addEventListener('click', fetchData);
+
+  /* legge il file yaml, lo converte in oggetto JS
+     e abilita il bottone */
+  function handleYaml(e){
+    const f = e.target.files[0];
+    if(!f) return;
+    const reader = new FileReader();
+    reader.onload = evt=>{
+      try{
+        cfg = jsyaml.load(evt.target.result); // <- parsing YAML lato client
+        if(!cfg.api || !cfg.api.base_url) throw 'chiave base_url mancante';
+        btnGo.disabled = false;
+        errBox.textContent = '';
+      }catch(ex){
+        errBox.textContent = 'YAML non valido: ' + ex;
+      }
+    };
+    reader.readAsText(f);
+  }
+
+  /* effettua la chiamata fetch e popola la tabella */
+  async function fetchData(){
+    errBox.textContent = '';
+    const url = `${cfg.api.base_url}/${selEP.value}`;
+    try{
+      const r = await fetch(url);
+      if(!r.ok) throw 'HTTP '+r.status;
+      const data = await r.json();
+      buildTable(data);
+    }catch(ex){
+      errBox.textContent = ex;
+    }
+  }
+
+  /* crea dinamicamente th e td in base al primo oggetto dell’array */
+  function buildTable(arr){
+    if(!Array.isArray(arr) || !arr.length){ errBox.textContent='Nessun dato'; return; }
+    const thead = table.querySelector('thead');
+    const tbody = table.querySelector('tbody');
+    thead.innerHTML = '';
+    tbody.innerHTML = '';
+
+    // intestazioni
+    const headers = Object.keys(arr[0]);
+    thead.insertRow();
+    headers.forEach(h=>thead.rows[0].insertCell().textContent=h);
+
+    // righe
+    arr.forEach(item=>{
+      const tr = tbody.insertRow();
+      headers.forEach(h=>tr.insertCell().textContent=item[h]);
+    });
+    table.hidden = false;
+  }
+</script>
+</body>
+</html>

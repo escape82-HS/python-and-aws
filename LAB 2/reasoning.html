@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <title>LAB 2 – Pagina autodidattica</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body     { font-family: system-ui, sans-serif; margin: 0; background:#f7f7f7; color:#222; }
+    header   { background:#0a0a23; color:#fff; padding:1rem 2rem; }
+    main     { padding:2rem; max-width:900px; margin:auto; display:grid; gap:2rem; }
+    section  { background:#fff; border:1px solid #ddd; border-radius:6px; padding:1.5rem; }
+    h2       { margin-top:0; }
+    code     { background:#eee; padding:2px 4px; border-radius:3px; font-size:0.95em; }
+    pre      { background:#f4f4f4; padding:1rem; overflow-x:auto; border-radius:4px; }
+    label    { display:block; margin:0.5rem 0 0.2rem; }
+    input, select, button{ padding:0.4rem 0.6rem; font-size:1rem; }
+    button   { background:#0a0a23; color:#fff; border:none; cursor:pointer; }
+    button:disabled{ background:#aaa; cursor:not-allowed; }
+    #error   { color:#b60000; margin-top:1rem; }
+    table    { border-collapse:collapse; width:100%; margin-top:1.5rem; }
+    th,td    { padding:0.5rem; border:1px solid #ccc; }
+    th       { background:#eee; }
+    details  { margin-top:0.75rem; }
+    summary  { cursor:pointer; font-weight:bold; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>LAB 2 – Client API & YAML in un’unica pagina HTML</h1>
+  <p>Guida, codice e spiegazioni integrati</p>
+</header>
+
+<main>
+  <!-- ========================================================= -->
+  
+
+  <!-- ========================================================= -->
+  <section id="gui">
+    <h2>1. Cosa sta succedendo? Spiegazione guidata</h2>
+    <details open>
+      <summary>▸ Obiettivo del laboratorio</summary>
+      <p>Simuliamo il comportamento dello script Python <code>client_http.py</code> interamente nel browser:
+        <ol>
+          <li>leggere un file YAML di configurazione;</li>
+          <li>sovrascrivere alcuni valori con variabili d’ambiente (simulate);</li>
+          <li>contattare un’API REST pubblica;</li>
+          <li>mostrare i dati in una tabella HTML.</li>
+        </ol>
+      </p>
+    </details>
+
+    <details>
+      <summary>▸ Parsing YAML lato client (senza Python)</summary>
+      <p>Usiamo la libreria <b>js-yaml</b> già presente nel CDN.</p>
+      <pre><code>import * as yaml from 'js-yaml';        // equivale a "import yaml"
+cfg = yaml.load(testoYAML);</code></pre>
+      <p><code>yaml.load()</code> restituisce oggetti/analoghi dizionari Python. Nel codice "vero" usiamo <code>yaml.safe_load()</code> per sicurezza; la versione JS lo fa già di default.</p>
+    </details>
+
+    <details>
+      <summary>▸ Simuliamo le variabili d’ambiente</summary>
+      <p>Il codice Python fa:</p>
+      <pre><code>cfg["api"]["base_url"] = os.getenv("API_BASE_URL") or cfg["api"]["base_url"]</code></pre>
+      <p>Nel browser non esiste <code>os.getenv</code>; perciò aggiungiamo due campi opzionali in fondo alla pagina (vedi sezione "Mock env") dove puoi scrivere temporaneamente l’URL base o il livello di log. Se li lasci vuoti, verrà usato il valore YAML caricato.</p>
+    </details>
+
+    <details>
+      <summary>▸ Chiamata HTTP con fetch (alternativa a requests)</summary>
+      <p>Python:</p>
+      <pre><code>resp = requests.get(url)
+resp.raise_for_status()
+data = resp.json()</code></pre>
+      <p>JavaScript:</p>
+      <pre><code>const resp = await fetch(url);
+if (!resp.ok) throw new Error(resp.status);
+const data = await resp.json();</code></pre>
+      <p><code>fetch</code> è nativo nei browser; ritorna una Promise, quindi usiamo <code>async/await</code>.</p>
+    </details>
+
+    <details>
+      <summary>▸ Creazione dinamica della tabella</summary>
+      <p>La funzione <code>buildTable(array)</code> prende un array di oggetti (identico a quanto restituisce JSONPlaceholder).<br>
+        1) Con <code>Object.keys(arr[0])</code> ricava l’elenco delle colonne.<br>
+        2) Con un doppio ciclo crea <code>&lt;th&gt;</code> e <code>&lt;td&gt;</code>.<br>
+        3) Inserisce tutto nel DOM. Se l’API restituisce un altro schema, la tabella si adatta ugualmente.
+      </p>
+    </details>
+  </section>
+
+  
+  <!-- ========================================================= -->
+  
+</main>
+
+<!-- ========= CDN: unica dipendenza esterna ================= -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+
+
+</body>
+</html>

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <title>LAB 3 – Primi passi con Boto3 (AWS SDK per Python)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body     { font-family: system-ui, sans-serif; margin:0; background:#f7f7f7; color:#222; line-height:1.5; }
+    header   { background:#232f3e; color:#fff; padding:1.5rem 2rem; }
+    main     { max-width:900px; margin:auto; padding:2rem; display:grid; gap:2.5rem; }
+    h2       { border-bottom:2px solid #ff9900; padding-bottom:.3rem; }
+    pre      { background:#f4f4f4; padding:1rem; overflow-x:auto; border-left:4px solid #ff9900; }
+    code     { background:#eee; padding:2px 4px; border-radius:3px; }
+    .cmd     { color:#d81414; font-weight:bold; }
+    .info    { background:#e0f2ff; padding:1rem; border-left:4px solid #2196f3; }
+    .warn    { background:#fff3cd; padding:1rem; border-left:4px solid #ff9800; }
+    table    { border-collapse:collapse; width:100%; }
+    th,td    { border:1px solid #ccc; padding:.5rem; }
+    th       { background:#eee; }
+    summary  { cursor:pointer; font-weight:bold; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>LAB 3 – Primi passi con Boto3</h1>
+  <p>Guida step-by-step per connettersi ad AWS, gestire EC2 e S3 interamente con Python</p>
+</header>
+
+<main>
+  <!-- SEZIONE 0 -->
+  <section>
+    <h2>0 – Checklist preparazione ambiente</h2>
+    <ul>
+      <li>Account AWS (utente IAM con <b>AdministratorAccess</b> oppure policy custom: <code>EC2FullAccess</code> + <code>S3FullAccess</code>)</li>
+      <li>Python ≥ 3.8 installato (preferibilmente via <a href="https://brew.sh">Homebrew</a> su macOS/Linux o <a href="https://www.python.org">python.org</a> su Windows)</li>
+      <li>AWS CLI già configurato con <code>aws configure</code> (region, access key, secret key, output = json)</li>
+      <li>Editor/IDE a scelta (VS Code, PyCharm, ecc.)</li>
+    </ul>
+  </section>
+
+  <!-- SEZIONE 1 -->
+  <section>
+    <h2>1 – Installazione e configurazione di Boto3</h2>
+    <p>Crea/attiva un virtual-env (best-practice) → evita conflitti con pacchetti di sistema.</p>
+    <pre><span class="cmd">$</span> python3 -m venv .venv
+<span class="cmd">$</span> source .venv/bin/activate        # Windows: .venv\Scripts\activate
+(.venv) <span class="cmd">$</span> pip install -U pip boto3</pre>
+
+    <p class="info"><b>Verifica:</b> apri REPL Python e digita <code>import boto3, botocore</code> – nessun errore = OK</p>
+  </section>
+
+  <!-- SEZIONE 2 -->
+  <section>
+    <h2>2 – Prima connessione: verifica identità e regione</h2>
+    <pre><code># connessione_minima.py
+import boto3, json
+
+session = boto3.Session()          # usa credenziali e regione di aws configure
+sts     = session.client('sts')
+print("Account:", sts.get_caller_identity()["Account"])
+print("UserArn:", sts.get_caller_identity()["Arn"])
+
+# ECHO della region di default
+print("Region   :", session.region_name)</code></pre>
+    <p class="warn">Se ottieni <i>Unable to locate credentials</i> → lancia <code>aws configure</code> o imposta variabili <code>AWS_ACCESS_KEY_ID</code> e <code>AWS_SECRET_ACCESS_KEY</code></p>
+  </section>
+
+  <!-- SEZIONE 3 -->
+  <section>
+    <h2>3 – Listing di risorse EC2 e S3</h2>
+
+    <h3>3-A EC2 – elenca istanze attive</h3>
+    <pre><code># list_ec2.py
+import boto3
+
+ec2 = boto3.client('ec2')
+
+response = ec2.describe_instances()
+for res in response['Reservations']:
+    for inst in res['Instances']:
+        state = inst['State']['Name']
+        tag_name = next((t['Value'] for t in inst.get('Tags', []) if t['Key']=='Name'), '-')
+        print(f"{inst['InstanceId']}  {state:>10}  {tag_name}")</code></pre>
+
+    <h3>3-B S3 – elenca bucket e oggetti</h3>
+    <pre><code># list_s3.py
+import boto3
+
+s3 = boto3.client('s3')
+
+print("Bucket list:")
+for b in s3.list_buckets()['Buckets']:
+    print(" -", b['Name'], "creato il", b['CreationDate'])
+
+# Lista oggetti del primo bucket (max 10)
+if s3.list_buckets()['Buckets']:
+    bucket = s3.list_buckets()['Buckets'][0]['Name']
+    print(f"\nPrimi 10 oggetti di {bucket}:")
+    for obj in s3.list_objects_v2(Bucket=bucket, MaxKeys=10)['Contents']:
+        print("   ", obj['Key'], obj['Size'], "bytes")</code></pre>
+  </section>
+
+  <!-- SEZIONE 4 -->
+  <section>
+    <h2>4 – Creare e gestire bucket S3</h2>
+
+    <h3>4-A Creazione bucket (nome univoco GLOBALE!)</h3>
+    <pre><code>import boto3, uuid
+
+s3 = boto3.client('s3')
+bucket = f"lab3-bucket-{uuid.uuid4()}"   # suffisso casuale
+s3.create_bucket(
+    Bucket=bucket,
+    CreateBucketConfiguration={'LocationConstraint': 'eu-west-1'}
+)
+print(f"Creato bucket: {bucket}")</code></pre>
+    <p class="warn">Se ricevi <i>BucketAlreadyExists</i> → il prefisso non è univoco, cambialo.</p>
+
+    <h3>4-B Cancellazione bucket vuoto</h3>
+    <pre><code>s3.delete_bucket(Bucket=bucket)</code></pre>
+
+    <h3>4-C Cancellazione bucket NON vuoto (nuova API)</h3>
+    <pre><code>import boto3
+s3 = boto3.resource('s3')          # uso resource per comodità
+bucket = s3.Bucket(bucket)
+bucket.objects.all().delete()    # svuota
+bucket.delete()                    # rimuovi</code></pre>
+  </section>
+
+  <!-- SEZIONE 5 -->
+  <section>
+    <h2>5 – Upload / Download di file</h2>
+
+    <h3>5-A Upload: versione semplice</h3>
+    <pre><code>s3.upload_file(Filename='report.pdf', Bucket=bucket, Key='docs/report.pdf')
+print("Caricamento completato")</code></pre>
+
+    <h3>5-B Upload con metadata e ACL pubblica (es. immagini)</h3>
+    <pre><code>s3.upload_file(
+    Filename='logo.png',
+    Bucket=bucket,
+    Key='public/logo.png',
+    ExtraArgs={
+        'ACL': 'public-read',
+        'ContentType': 'image/png',
+        'Metadata': {'author': 'lab3', 'project': 'demo'}
+    }
+)</code></pre>
+    <p>Link pubblico: <code>https://[bucket].s3.eu-west-1.amazonaws.com/public/logo.png</code></p>
+
+    <h3>5-C Download</h3>
+    <pre><code>s3.download_file(Bucket=bucket, Key='docs/report.pdf', Filename='report_local.pdf')</code></pre>
+
+    <h3>5-D Upload/Download in RAM (oggetti piccoli)</h3>
+    <pre><code># stringa → S3
+s3.put_object(Bucket=bucket, Key='hello.txt', Body=b'Ciao da LAB 3')
+
+# S3 → stringa
+response = s3.get_object(Bucket=bucket, Key='hello.txt')
+print(response['Body'].read().decode())   # "Ciao da LAB 3"</code></pre>
+  </section>
+
+  <!-- SEZIONE 6 -->
+  <section>
+    <h2>6 – Gestione di metadata e tags</h2>
+
+    <h3>6-A Metadata (key-value visibili in Console → Proprietà → Metadata)</h3>
+    <pre><code>s3.copy_object(
+    Bucket=bucket,
+    CopySource=f'{bucket}/public/logo.png',
+    Key='public/logo_v2.png',
+    Metadata={'checked': 'true', 'resize': '256x256'},
+    MetadataDirective='REPLACE'   # importante: sovrascrivi
+)</code></pre>
+
+    <h3>6-B Tag (massimo 10, usati per policy/filtraggio)</h3>
+    <pre><code>s3.put_object_tagging(
+    Bucket=bucket,
+    Key='public/logo.png',
+    Tagging={
+        'TagSet': [
+            {'Key': 'Env',   'Value': 'lab'},
+            {'Key': 'Owner', 'Value': 'student'}
+        ]
+    }
+)</code></pre>
+    <p>Leggere i tag:</p>
+    <pre><code>tags = s3.get_object_tagging(Bucket=bucket, Key='public/logo.png')['TagSet']
+print(tags)</code></pre>
+  </section>
+
+  <!-- SEZIONE 7 -->
+  <section>
+    <h2>7 – Esercizi da consegnare</h2>
+    <ol>
+      <li><b>EC2 inventory:</b> salva su CSV id, tipo, stato, nome-tag di TUTTE le istanze presenti (usa <code>csv.DictWriter</code>).</li>
+      <li><b>S3 backup script:</b> sincronizza una cartella locale <code>./data</code> in un bucket (overwrite solo se file più recente). Suggerimento: confronta <code>LastModified</code> dell’oggetto S3 con <code>os.path.getmtime()</code>.</li>
+      <li><b>Tagging policy:</b> scrivi funzione che aggiunge tag <code>Project=lab3</code> a TUTTI i bucket creati oggi; se ne trova senza tag, li aggiunge a posteriori.</li>
+      <li><b>Ec2 power-scheduler (opzionale):</b> spegni le istanze con tag <code>OfficeHours=false</code> ogni venerdì sera (usa <code>ec2.stop_instances()</code>).</li>
+    </ol>
+  </section>
+
+  <!-- SEZIONE 8 -->
+  <section>
+    <h2>8 – Snippet & comandi utili</h2>
+    <table>
+      <thead><tr><th>Comando AWS CLI</th><th>Equivalente Boto3 (client)</th></tr></thead>
+      <tbody>
+        <tr><td><code>aws s3 ls</code></td><td><code>s3.list_buckets()</code></td></tr>
+        <tr><td><code>aws s3 cp logo.png s3://bkt/logo.png</code></td><td><code>s3.upload_file('logo.png','bkt','logo.png')</code></td></tr>
+        <tr><td><code>aws s3 rb s3://bkt --force</code></td><td><code>see 4-C</code></td></tr>
+        <tr><td><code>aws ec2 describe-instances</code></td><td><code>ec2.describe_instances()</code></td></tr>
+        <tr><td><code>aws ec2 stop-instances --ids i-xxx</code></td><td><code>ec2.stop_instances(InstanceIds=['i-xxx'])</code></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- SEZIONE 9 -->
+  <section>
+    <h2>9 – Pulizia finale (obbligatoria per evitare costi)</h2>
+    <ul>
+      <li>Termina/elimina istanze EC2 create per test</li>
+      <li>Svuota e cancella bucket S3 di esercitazione</li>
+      <li>Canciamoci eventuali snapshot e AMI se li hai creati</li>
+    </ul>
+    <p class="warn">AWS addebita storage S3 e EBS anche se le macchine sono ferme!</p>
+  </section>
+
+  <!-- SEZIONE 10 -->
+  <section>
+    <h2>10 – Risorse ufficiali</h2>
+    <ul>
+      <li><a href="https://boto3.amazonaws.com/v1/documentation/api/latest/index.html">Documentazione Boto3</a></li>
+      <li><a href="https://docs.aws.amazon.com/cli/">AWS CLI Reference</a></li>
+      <li><a href="https://jsonformatter.org/yaml-validator">YAML validator (utile per debug)</a></li>
+      <li><a href="https://github.com/aws-samples">AWS Samples GitHub</a></li>
+    </ul>
+  </section>
+</main>
+
+</body>
+</html>

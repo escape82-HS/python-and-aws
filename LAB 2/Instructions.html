@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LAB-2 – Automazione con Python</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+             line-height:1.6;margin:0;padding:0;background:#f7f7f7;color:#333}
+        header{background:#0057b8;color:#fff;padding:1.5rem 1rem;text-align:center}
+        main{max-width:900px;margin:auto;padding:1rem 2rem;background:#fff}
+        h1,h2,h3{color:#0057b8}
+        code,pre{background:#f4f4f4;border:1px solid #ddd;border-radius:4px;padding:1rem;overflow-x:auto}
+        pre code{background:none;padding:0;border:none}
+        .step{margin:1.5rem 0}
+        .file-label{font-weight:bold;color:#555}
+        ol{margin-left:1.2rem}
+        .alert{background:#fff3cd;border-left:5px solid #ffc107;padding:1rem;margin:1rem 0}
+    </style>
+</head>
+<body>
+<header>
+    <h1>LAB-2 – Automazione con Python</h1>
+    <p>Client HTTP configurabile, logging strutturato e parsing JSON</p>
+</header>
+
+<main>
+    <h2>Obiettivi</h2>
+    <ul>
+        <li>Creare un <strong>client HTTP riutilizzabile</strong> (wrapper <code>requests</code>)</li>
+        <li>Gestire configurazioni via <strong>YAML + env-var</strong> (pattern 12-factor)</li>
+        <li>Implementare <strong>logging JSON</strong> con rotazione automatica</li>
+        <li>Parsare risposte JSON e gestire errori HTTP</li>
+        <li>(extra) Aggiungere retry, autenticazione Bearer, CLI <code>argparse</code></li>
+    </ul>
+
+    <h2>0. Prerequisiti</h2>
+    <p>Python ≥ 3.9 e venv già creato (vedi LAB-0).</p>
+
+    <h2>1. Setup iniziale (macOS / Linux)</h2>
+    <div class="step">
+        <ol>
+            <li>Apri terminale e crea la cartella:
+                <pre><code>mkdir lab2-automazione-http && cd $_</code></pre>
+            </li>
+            <li>Crea e attiva il virtual-env:
+                <pre><code>python3 -m venv venv
+source venv/bin/activate   # attiva (prompt diventa (venv))</code></pre>
+            </li>
+            <li>Installa dipendenze:
+                <pre><code>python -m pip install --upgrade pip
+pip install requests pyyaml python-json-logger</code></pre>
+            </li>
+        </ol>
+    </div>
+
+    <h2>2. Struttura progetto</h2>
+    <pre><code>lab2-automazione-http/
+├── config.yaml
+├── client_http.py
+├── main.py
+├── requirements.txt
+└── log/               # creato automaticamente</code></pre>
+
+    <h2>3. File di configurazione – <span class="file-label">config.yaml</span></h2>
+    <pre><code>api:
+  base_url: "https://jsonplaceholder.typicode.com"
+  timeout: 10
+
+logging:
+  level: "INFO"          # DEBUG, INFO, WARNING, ERROR
+  console: true
+  file: "log/app.log"
+  max_bytes: 1_048_576   # 1 MB
+  backup_count: 5</code></pre>
+    <p>Puoi sovrascrivere chiavi con env-var: <code>API_BASE_URL</code>, <code>LOG_LEVEL</code>.</p>
+
+    <h2>4. Modulo client – <span class="file-label">client_http.py</span></h2>
+    <pre><code>#!/usr/bin/env python3
+import json, logging, os, yaml
+from logging.handlers import RotatingFileHandler
+import requests
+from requests.exceptions import HTTPError, Timeout, RequestException
+
+def setup_logging(config: dict) -> logging.Logger:
+    log = logging.getLogger("client_http")
+    log.setLevel(getattr(logging, config["level"].upper()))
+    formatter = logging.Formatter(
+        '{"time":"%(asctime)s","level":"%(levelname)s","message":"%(message)s"}'
+    )
+    if config["console"]:
+        ch = logging.StreamHandler()
+        ch.setFormatter(formatter)
+        log.addHandler(ch)
+    fh = RotatingFileHandler(
+        config["file"], maxBytes=config["max_bytes"], backupCount=config["backup_count"]
+    )
+    fh.setFormatter(formatter)
+    log.addHandler(fh)
+    return log
+
+def load_config(path="config.yaml") -> dict:
+    with open(path, encoding="utf8") as fh:
+        cfg = yaml.safe_load(fh)
+    cfg["api"]["base_url"] = os.getenv("API_BASE_URL") or cfg["api"]["base_url"]
+    cfg["logging"]["level"] = os.getenv("LOG_LEVEL") or cfg["logging"]["level"]
+    return cfg
+
+class APIClient:
+    def __init__(self, base_url: str, timeout: int, logger: logging.Logger):
+        self.base_url = base_url.rstrip("/")
+        self.timeout = timeout
+        self.log = logger
+        self.session = requests.Session()
+        self.session.headers.update({"User-Agent": "lab2-client/1.0"})
+
+    def _request(self, method: str, endpoint: str, **kwargs) -> dict:
+        url = f"{self.base_url}/{endpoint.lstrip('/')}"
+        self.log.info("%s %s", method.upper(), url)
+        try:
+            resp = self.session.request(method, url, timeout=self.timeout, **kwargs)
+            resp.raise_for_status()
+            return resp.json() if "json" in resp.headers.get("Content-Type", "") else {"text": resp.text}
+        except HTTPError as e:
+            self.log.error("HTTP error %s - %s", e.response.status_code, e.response.text)
+            raise
+        except Timeout:
+            self.log.error("Timeout after %ss", self.timeout)
+            raise
+        except RequestException as e:
+            self.log.error("Request failed: %s", e)
+            raise
+        except json.JSONDecodeError:
+            self.log.error("Invalid JSON response")
+            raise
+
+    def get(self, endpoint: str, params=None) -> dict:
+        return self._request("GET", endpoint, params=params)
+
+    def post(self, endpoint: str, data: dict) -> dict:
+        return self._request("POST", endpoint, json=data)</code></pre>
+
+    <h2>5. Script principale – <span class="file-label">main.py</span></h2>
+    <pre><code>#!/usr/bin/env python3
+from client_http import load_config, setup_logging, APIClient
+
+def main():
+    cfg = load_config()
+    log = setup_logging(cfg["logging"])
+    client = APIClient(cfg["api"]["base_url"], cfg["api"]["timeout"], log)
+
+    post = client.get("/posts/1")
+    log.info("Post ricevuto: id=%s title=%s", post["id"], post["title"])
+
+    payload = {"title": "foo", "body": "bar", "userId": 1}
+    new_post = client.post("/posts", data=payload)
+    log.info("Creato nuovo post con id %s", new_post.get("id"))
+
+if __name__ == "__main__":
+    main()</code></pre>
+
+    <h2>6. Esecuzione</h2>
+    <div class="step">
+        <pre><code>python main.py</code></pre>
+        <p>Output di esempio (console):</p>
+        <pre><code>{"time":"2024-01-06 14:22:18,245","level":"INFO","message":"GET https://jsonplaceholder.typicode.com/posts/1"}
+{"time":"2024-01-06 14:22:18,400","level":"INFO","message":"Post ricevuto: id=1 title=sunt aut facere..."}
+{"time":"2024-01-06 14:22:18,401","level":"INFO","message":"POST https://jsonplaceholder.typicode.com/posts"}
+{"time":"2024-01-06 14:22:18,550","level":"INFO","message":"Creato nuovo post con id 101"}</code></pre>
+    </div>
+
+    <h2>7. Test con env-var</h2>
+    <pre><code>LOG_LEVEL=DEBUG API_BASE_URL=https://api.github.com python main.py</code></pre>
+
+    <h2>8. Clean-up</h2>
+    <pre><code>deactivate        # esce dal venv
+rm -rf venv log/*.log*</code></pre>
+
+    <h2>9. Extra / Homework</h2>
+    <ul>
+        <li>Aggiungere retry esponenziale con <code>tenacity</code></li>
+        <li>Supportare autenticazione Bearer: esporta <code>API_TOKEN</code> e modifica header in <code>APIClient.__init__</code></li>
+        <li>Creare CLI con <code>argparse</code>:
+            <pre><code>python cli.py get /posts/1
+python cli.py post /posts --data '{"title":"xyz"}'</code></pre>
+        </li>
+        <li>Scrivere test unitari con <code>pytest</code> e <code>responses</code></li>
+        <li>Pubblicare il pacchetto su TestPyPI:
+            <pre><code>pip install build twine
+python -m build
+twine upload --repository testpypi dist/*</code></pre>
+        </li>
+    </ul>
+
+    <div class="alert">
+        <strong>Pro-tip:</strong> se ricevi ancora <code>ModuleNotFoundError</code> ricontrolla di aver attivato il venv con <code>source venv/bin/activate</code> e di usare <code>python -m pip install …</code>.
+    </div>
+</main>
+</body>
+</html>
