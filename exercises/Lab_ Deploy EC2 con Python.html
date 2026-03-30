@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab: Deploy di un'istanza AWS EC2 con Python</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .code-block { background-color: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; font-family: 'Courier New', Courier, monospace; }
+        .step-number { display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: 9999px; background-color: #f59e0b; color: white; font-weight: bold; margin-right: 0.75rem; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 line-height-relaxed">
+
+    <div class="max-w-4xl mx-auto py-10 px-5">
+        
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-extrabold text-gray-900 mb-4">☁️ Lab: Deploy di un'istanza AWS EC2 con Python</h1>
+            <p class="text-lg text-gray-600">Una guida passo-passo per principianti per automatizzare la creazione di server cloud utilizzando Python e la libreria Boto3.</p>
+        </header>
+
+        <!-- Prerequisiti -->
+        <section class="bg-white p-6 rounded-lg shadow-md mb-8 border-l-4 border-blue-500">
+            <h2 class="text-2xl font-bold mb-4 flex items-center"><span class="mr-2">📋</span> Prerequisiti</h2>
+            <ul class="list-disc pl-6 space-y-2 text-gray-700">
+                <li>Un <strong>Account AWS</strong> attivo.</li>
+                <li><strong>Python 3</strong> installato sul tuo computer.</li>
+                <li>Un utente IAM su AWS con permessi di accesso programmatico (Access Key ID e Secret Access Key) e permessi per creare istanze EC2 (es. <em>AmazonEC2FullAccess</em>).</li>
+            </ul>
+        </section>
+
+        <!-- Step 1 -->
+        <section class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-2xl font-bold mb-4 flex items-center"><span class="step-number">1</span> Preparazione dell'Ambiente</h2>
+            <p class="mb-4 text-gray-700">Per far comunicare Python con AWS, utilizzeremo la libreria ufficiale chiamata <strong>Boto3</strong>. Inoltre, useremo la AWS CLI per configurare in modo sicuro le nostre credenziali.</p>
+            
+            <h3 class="font-semibold text-lg mb-2">1. Installa le librerie necessarie:</h3>
+            <p class="mb-2 text-sm text-gray-600">Apri il terminale (o Prompt dei comandi) ed esegui:</p>
+            <div class="code-block mb-4">pip install boto3 awscli</div>
+
+            <h3 class="font-semibold text-lg mb-2">2. Configura le credenziali AWS:</h3>
+            <p class="mb-2 text-sm text-gray-600">Nel terminale, digita il seguente comando e inserisci le tue chiavi quando richieste. Usa <code>us-east-1</code> come regione di default e <code>json</code> come formato di output.</p>
+            <div class="code-block mb-4">aws configure</div>
+            <p class="text-sm bg-yellow-50 p-3 rounded text-yellow-800 border border-yellow-200">
+                <strong>Nota di sicurezza:</strong> Non inserire <em>mai</em> le tue chiavi AWS direttamente nel codice Python. Utilizzare `aws configure` le salva in modo sicuro nel tuo computer.
+            </p>
+        </section>
+
+        <!-- Step 2 -->
+        <section class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-2xl font-bold mb-4 flex items-center"><span class="step-number">2</span> Scrivere il Codice Python</h2>
+            <p class="mb-4 text-gray-700">Crea un nuovo file chiamato <code>deploy_ec2.py</code> e incolla il seguente codice. Questo script creerà un'istanza di tipo <strong>t2.micro</strong> (inclusa nel piano gratuito di AWS).</p>
+            
+            <div class="code-block mb-4">
+<pre><code>import boto3
+
+# 1. Inizializza la connessione al servizio EC2 nella regione specificata
+ec2 = boto3.resource('ec2', region_name='us-east-1')
+
+print("Richiesta di creazione dell'istanza inviata. Attendere...")
+
+# 2. Crea l'istanza
+instances = ec2.create_instances(
+  ImageId='ami-0c7217cdde317cfec', # AMI di Ubuntu 22.04 in us-east-1
+  MinCount=1,                      # Numero minimo di istanze da creare
+  MaxCount=1,                      # Numero massimo di istanze da creare
+  InstanceType='t2.micro',         # Tipo di istanza (Free Tier eligible)
+  TagSpecifications=[              # Diamo un nome alla nostra istanza
+      {
+          'ResourceType': 'instance',
+          'Tags': [
+              {'Key': 'Name', 'Value': 'LaMiaPrimaIstanzaPython'}
+          ]
+      }
+  ]
+)
+
+# 3. Ottieni l'oggetto dell'istanza appena creata
+instance = instances[0]
+
+# 4. Attendi che l'istanza sia completamente avviata ("running")
+print("Attesa dell'avvio dell'istanza...")
+instance.wait_until_running()
+
+# 5. Aggiorna i dati dell'istanza per ottenere l'Indirizzo IP pubblico
+instance.reload()
+
+print("\n✅ Istanza creata con successo!")
+print(f"ID Istanza: {instance.id}")
+print(f"Indirizzo IP Pubblico: {instance.public_ip_address}")
+</code></pre>
+            </div>
+            <p class="text-sm text-gray-600"><strong>Cos'è l'ImageId (AMI)?</strong> È il sistema operativo base. L'ID <code>ami-0c7217cdde317cfec</code> corrisponde a Ubuntu Linux nella regione us-east-1. Se usi una regione diversa, dovrai cercare l'ID AMI corrispondente nella console AWS.</p>
+        </section>
+
+        <!-- Step 3 -->
+        <section class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-2xl font-bold mb-4 flex items-center"><span class="step-number">3</span> Esecuzione e Verifica</h2>
+            <p class="mb-4 text-gray-700">Ora sei pronto per lanciare il tuo server nel cloud!</p>
+            <ol class="list-decimal pl-6 space-y-2 text-gray-700 mb-4">
+                <li>Apri il terminale nella cartella dove hai salvato il file.</li>
+                <li>Esegui lo script con il comando: <code class="bg-gray-200 px-1 rounded">python deploy_ec2.py</code></li>
+                <li>Attendi qualche secondo. Vedrai stampato a schermo l'ID della tua nuova istanza e il suo indirizzo IP pubblico.</li>
+                <li>Vai sulla <strong>Console AWS</strong>, cerca il servizio <strong>EC2</strong>, clicca su <strong>Instances</strong> e vedrai il tuo server in esecuzione!</li>
+            </ol>
+        </section>
+
+        <!-- Step 4 -->
+        <section class="bg-red-50 p-6 rounded-lg shadow-md border-l-4 border-red-500">
+            <h2 class="text-2xl font-bold mb-4 text-red-800 flex items-center"><span class="step-number bg-red-600">4</span> Pulizia (MOLTO IMPORTANTE)</h2>
+            <p class="mb-4 text-gray-800">Per evitare che AWS ti addebiti dei costi, <strong>devi sempre spegnere ed eliminare (Terminare)</strong> le risorse che non usi più.</p>
+            <p class="mb-4 text-gray-700">Crea un file <code>termina_ec2.py</code> ed esegui questo codice, sostituendo l'ID con quello che hai ottenuto nello step precedente:</p>
+            
+            <div class="code-block mb-4">
+<pre><code>import boto3
+
+ec2 = boto3.resource('ec2', region_name='us-east-1')
+
+# INSERISCI QUI L'ID DELLA TUA ISTANZA (es. 'i-0abcd1234efgh5678')
+instance_id = 'INSERISCI_IL_TUO_INSTANCE_ID'
+
+# Trova l'istanza e terminala
+instance = ec2.Instance(instance_id)
+instance.terminate()
+
+print(f"Richiesta di terminazione inviata per l'istanza {instance_id}.")
+</code></pre>
+            </div>
+            <p class="font-bold text-red-700">Verifica sempre sulla console AWS che l'istanza sia nello stato "Terminated".</p>
+        </section>
+
+        <!-- Footer -->
+        <footer class="text-center text-gray-500 text-sm mt-12 mb-4 border-t pt-6">
+            <p class="mb-2">Congratulazioni! Hai appena automatizzato il cloud con Python. 🎉</p>
+            <p>Materiale didattico a cura di <a href="https://www.marblemind.eu" target="_blank" class="text-blue-600 hover:text-blue-800 font-semibold transition-colors">MarbleMind</a></p>
+        </footer>
+
+    </div>
+</body>
+</html>

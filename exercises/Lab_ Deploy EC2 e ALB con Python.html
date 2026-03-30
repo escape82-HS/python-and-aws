@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab: Deploy di EC2 e Application Load Balancer con Python</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .code-block { background-color: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; font-family: 'Courier New', Courier, monospace; font-size: 0.875rem; }
+        .step-number { display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: 9999px; background-color: #3b82f6; color: white; font-weight: bold; margin-right: 0.75rem; flex-shrink: 0; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 line-height-relaxed">
+
+    <div class="max-w-5xl mx-auto py-10 px-5">
+        
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-extrabold text-gray-900 mb-4">⚖️ Lab: Deploy di EC2 e ALB con Python</h1>
+            <p class="text-lg text-gray-600">Impara a creare un'architettura ad alta affidabilità: un Application Load Balancer pubblico che distribuisce il traffico a due server web privati, tutto automatizzato con Boto3.</p>
+        </header>
+
+        <!-- Prerequisiti -->
+        <section class="bg-white p-6 rounded-lg shadow-md mb-8 border-l-4 border-blue-500">
+            <h2 class="text-2xl font-bold mb-4 flex items-center"><span class="mr-2">📋</span> Prerequisiti</h2>
+            <p class="mb-3 text-gray-700">Prima di iniziare, assicurati di avere:</p>
+            <ul class="list-disc pl-6 space-y-2 text-gray-700">
+                <li>Credenziali AWS configurate (<code>aws configure</code>) con permessi sufficienti (EC2, ELB).</li>
+                <li>Python 3 e la libreria <code>boto3</code> installati.</li>
+                <li><strong>Infrastruttura di rete esistente nel tuo account AWS:</strong>
+                    <ul class="list-circle pl-6 mt-1 text-sm text-gray-600">
+                        <li>1 VPC</li>
+                        <li>2 Public Subnet (connesse a un Internet Gateway)</li>
+                        <li>2 Private Subnet (connesse a un NAT Gateway per scaricare Apache)</li>
+                    </ul>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Step 1 -->
+        <section class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-2xl font-bold mb-4 flex items-center"><span class="step-number">1</span> Raccogli gli ID della tua Rete</h2>
+            <p class="mb-4 text-gray-700">Per dire a Python dove creare le risorse, devi recuperare gli ID della tua rete dalla Console AWS (servizio VPC). Annotali, ti serviranno nel prossimo step.</p>
+            <div class="bg-gray-100 p-4 rounded border border-gray-200 text-sm font-mono text-gray-700">
+                VPC_ID = "vpc-xxxxxxxxxxxxxxxxx"<br>
+                PUB_SUBNET_1 = "subnet-xxxxxxxxxxxxxxxxx" (es. us-east-1a)<br>
+                PUB_SUBNET_2 = "subnet-yyyyyyyyyyyyyyyyy" (es. us-east-1b)<br>
+                PRIV_SUBNET_1 = "subnet-zzzzzzzzzzzzzzzzz" (es. us-east-1a)<br>
+                PRIV_SUBNET_2 = "subnet-wwwwwwwwwwwwwwwww" (es. us-east-1b)
+            </div>
+        </section>
+
+        <!-- Step 2 -->
+        <section class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-2xl font-bold mb-4 flex items-center"><span class="step-number">2</span> Lo Script di Deployment</h2>
+            <p class="mb-4 text-gray-700">Crea un file chiamato <code>deploy_alb_ec2.py</code>. Questo script farà molte cose: creerà i Security Group, lancerà le istanze installando Apache tramite <em>User Data</em>, e configurerà il Load Balancer.</p>
+            
+            <div class="code-block mb-4">
+<pre><code>import boto3
+import time
+
+# Inizializza i client Boto3
+ec2 = boto3.client('ec2', region_name='us-east-1')
+elbv2 = boto3.client('elbv2', region_name='us-east-1')
+
+# ==========================================
+# 🛑 INSERISCI QUI I TUOI ID
+# ==========================================
+VPC_ID = 'vpc-INSERISCI_QUI'
+PUB_SUBNETS = ['subnet-PUB1', 'subnet-PUB2']
+PRIV_SUBNETS = ['subnet-PRIV1', 'subnet-PRIV2']
+AMI_ID = 'ami-0c7217cdde317cfec' # Ubuntu 22.04 in us-east-1
+# ==========================================
+
+print("🚀 Inizio del deployment dell'infrastruttura...")
+
+# 1. Creazione Security Group per l'ALB (Aperto al mondo su porta 80)
+alb_sg = ec2.create_security_group(GroupName='ALB-SG-Lab', Description='SG per Application Load Balancer', VpcId=VPC_ID)
+alb_sg_id = alb_sg['GroupId']
+ec2.authorize_security_group_ingress(
+  GroupId=alb_sg_id,
+  IpPermissions=[{'IpProtocol': 'tcp', 'FromPort': 80, 'ToPort': 80, 'IpRanges': [{'CidrIp': '0.0.0.0/0'}]}]
+)
+print(f"✅ Creato ALB Security Group: {alb_sg_id}")
+
+# 2. Creazione Security Group per le EC2 (Accetta traffico SOLO dall'ALB)
+ec2_sg = ec2.create_security_group(GroupName='EC2-SG-Lab', Description='SG per Web Servers', VpcId=VPC_ID)
+ec2_sg_id = ec2_sg['GroupId']
+ec2.authorize_security_group_ingress(
+  GroupId=ec2_sg_id,
+  IpPermissions=[{'IpProtocol': 'tcp', 'FromPort': 80, 'ToPort': 80, 'UserIdGroupPairs': [{'GroupId': alb_sg_id}]}]
+)
+print(f"✅ Creato EC2 Security Group: {ec2_sg_id}")
+
+# 3. User Data: Script Bash per installare Apache e creare la pagina web
+user_data_script = """#!/bin/bash
+apt-get update -y
+apt-get install apache2 -y
+systemctl start apache2
+systemctl enable apache2
+echo "&lt;html&gt;&lt;head&gt;&lt;style&gt;body{font-family:sans-serif; text-align:center; margin-top:50px;}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;" &gt; /var/www/html/index.html
+echo "&lt;h1&gt;Benvenuto nel Lab AWS di MarbleMind! 🚀&lt;/h1&gt;" &gt;&gt; /var/www/html/index.html
+echo "&lt;p&gt;Questa pagina e' servita dall'istanza: &lt;strong&gt;$(hostname -f)&lt;/strong&gt;&lt;/p&gt;" &gt;&gt; /var/www/html/index.html
+echo "&lt;/body&gt;&lt;/html&gt;" &gt;&gt; /var/www/html/index.html
+"""
+
+# 4. Lancio delle due Istanze EC2 nelle Private Subnet
+istanze_create = []
+for i, subnet in enumerate(PRIV_SUBNETS):
+  response = ec2.run_instances(
+      ImageId=AMI_ID, InstanceType='t2.micro', MinCount=1, MaxCount=1,
+      SecurityGroupIds=[ec2_sg_id], SubnetId=subnet, UserData=user_data_script,
+      TagSpecifications=[{'ResourceType': 'instance', 'Tags': [{'Key': 'Name', 'Value': f'WebServer-Lab-{i+1}'}]}]
+  )
+  istanze_create.append(response['Instances'][0]['InstanceId'])
+
+print(f"⏳ Istanze EC2 in creazione: {istanze_create}. Attesa dell'avvio...")
+waiter = ec2.get_waiter('instance_running')
+waiter.wait(InstanceIds=istanze_create)
+print("✅ Istanze EC2 avviate.")
+
+# 5. Creazione del Target Group
+tg_response = elbv2.create_target_group(
+  Name='Lab-Target-Group', Protocol='HTTP', Port=80, VpcId=VPC_ID, TargetType='instance'
+)
+tg_arn = tg_response['TargetGroups'][0]['TargetGroupArn']
+
+# 6. Registrazione delle istanze nel Target Group
+targets = [{'Id': instance_id} for instance_id in istanze_create]
+elbv2.register_targets(TargetGroupArn=tg_arn, Targets=targets)
+print("✅ Target Group creato e istanze registrate.")
+
+# 7. Creazione dell'Application Load Balancer
+alb_response = elbv2.create_load_balancer(
+  Name='Lab-ALB-Web', Subnets=PUB_SUBNETS, SecurityGroups=[alb_sg_id], Scheme='internet-facing', Type='application'
+)
+alb_arn = alb_response['LoadBalancers'][0]['LoadBalancerArn']
+alb_dns = alb_response['LoadBalancers'][0]['DNSName']
+
+# 8. Creazione del Listener per l'ALB
+elbv2.create_listener(
+  LoadBalancerArn=alb_arn, Protocol='HTTP', Port=80,
+  DefaultActions=[{'Type': 'forward', 'TargetGroupArn': tg_arn}]
+)
+print("✅ Application Load Balancer e Listener creati.")
+
+print("\n🎉 DEPLOYMENT COMPLETATO! 🎉")
+print("=====================================================")
+print(f"🌐 Copia e incolla questo URL nel tuo browser:")
+print(f"http://{alb_dns}")
+print("=====================================================")
+print("(Nota: Potrebbero volerci 2-3 minuti prima che le istanze scarichino Apache e superino gli Health Check dell'ALB)")
+</code></pre>
+            </div>
+        </section>
+
+        <!-- Step 3 -->
+        <section class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-2xl font-bold mb-4 flex items-center"><span class="step-number">3</span> Esecuzione e Test</h2>
+            <ol class="list-decimal pl-6 space-y-3 text-gray-700">
+                <li>Assicurati di aver sostituito i valori <code>VPC_ID</code> e le <code>SUBNETS</code> nel codice con i tuoi veri ID.</li>
+                <li>Esegui lo script dal terminale: <code class="bg-gray-200 px-2 py-1 rounded">python deploy_alb_ec2.py</code>.</li>
+                <li>Lo script impiegherà circa 1-2 minuti. Al termine, ti restituirà un indirizzo web (il DNS dell'ALB).</li>
+                <li>Apri il browser e vai a quell'indirizzo. Vedrai la pagina web di benvenuto.</li>
+                <li><strong>Prova l'High Availability:</strong> Ricarica la pagina più volte (potrebbe essere necessario forzare il refresh o usare la navigazione in incognito). Vedrai che il nome dell'istanza (hostname) cambierà, dimostrando che l'ALB sta bilanciando il traffico tra i due server!</li>
+            </ol>
+        </section>
+
+        <!-- Step 4 -->
+        <section class="bg-red-50 p-6 rounded-lg shadow-md border-l-4 border-red-500">
+            <h2 class="text-2xl font-bold mb-4 text-red-800 flex items-center"><span class="step-number bg-red-600">4</span> Pulizia delle Risorse</h2>
+            <p class="mb-4 text-gray-800">Un'architettura complessa richiede una pulizia attenta per evitare costi. Poiché le risorse sono interdipendenti (non puoi eliminare un SG se è in uso da un'istanza), ti consigliamo di fare la pulizia tramite la <strong>Console AWS</strong> in questo ordine:</p>
+            <ol class="list-decimal pl-6 space-y-2 text-red-900 font-medium">
+                <li>Vai su <strong>EC2 &gt; Load Balancers</strong>: Seleziona <code>Lab-ALB-Web</code> e clicca su <em>Delete</em>.</li>
+                <li>Vai su <strong>EC2 &gt; Target Groups</strong>: Seleziona <code>Lab-Target-Group</code> e clicca su <em>Delete</em>.</li>
+                <li>Vai su <strong>EC2 &gt; Instances</strong>: Seleziona le due istanze <code>WebServer-Lab</code>, clicca su <em>Instance State</em> e poi su <em>Terminate instance</em>.</li>
+                <li><strong>Attendi</strong> che le istanze siano completamente nello stato "Terminated".</li>
+                <li>Vai su <strong>EC2 &gt; Security Groups</strong>: Elimina prima <code>EC2-SG-Lab</code> e infine <code>ALB-SG-Lab</code>.</li>
+            </ol>
+        </section>
+
+        <!-- Footer -->
+        <footer class="text-center text-gray-500 text-sm mt-12 mb-4 border-t pt-6">
+            <p class="mb-2">Hai appena creato un'infrastruttura web scalabile e sicura nel Cloud! ☁️</p>
+            <p>Materiale didattico a cura di <a href="https://www.marblemind.eu" target="_blank" class="text-blue-600 hover:text-blue-800 font-semibold transition-colors">MarbleMind</a></p>
+        </footer>
+
+    </div>
+</body>
+</html>

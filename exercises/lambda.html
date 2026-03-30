@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Corso Completo: Crea un Server con Python e AWS Lambda</title>
+    <style>
+        :root {
+            --aws-orange: #FF9900;
+            --aws-blue: #232F3E;
+            --aws-light-blue: #0073BB;
+            --bg-color: #F8F9FA;
+            --text-main: #333333;
+            --code-bg: #1E1E1E;
+            --card-bg: #FFFFFF;
+        }
+        
+        * { box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.7;
+            color: var(--text-main);
+            background-color: var(--bg-color);
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--aws-blue);
+            color: white;
+            padding: 50px 30px;
+            text-align: center;
+            border-radius: 12px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        
+        h1 { margin: 0 0 15px 0; font-size: 2.5em; }
+        h2 { color: var(--aws-blue); border-bottom: 3px solid var(--aws-orange); padding-bottom: 10px; margin-top: 40px; }
+        h3 { color: var(--aws-light-blue); margin-top: 25px; }
+        
+        .subtitle { font-size: 1.2em; color: #D5DBDB; margin-bottom: 25px; }
+        .sponsor { 
+            background: rgba(255, 153, 0, 0.15); 
+            padding: 12px 20px; 
+            border-radius: 8px; 
+            display: inline-block; 
+            border: 1px solid var(--aws-orange); 
+            font-size: 1.1em;
+        }
+        .sponsor a { color: var(--aws-orange); text-decoration: none; font-weight: bold; }
+        .sponsor a:hover { text-decoration: underline; }
+        
+        .section-card {
+            background: var(--card-bg);
+            padding: 35px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-left: 6px solid var(--aws-orange);
+        }
+        
+        /* Stili per la Tabella */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background-color: var(--aws-blue);
+            color: white;
+            font-weight: 600;
+        }
+        tr:hover { background-color: #f5f7fa; }
+        
+        /* Liste e Istruzioni */
+        .instruction-list { padding-left: 25px; }
+        .instruction-list li { margin-bottom: 15px; }
+        .highlight-click { 
+            background-color: #f0f0f0; 
+            padding: 3px 8px; 
+            border-radius: 4px; 
+            font-weight: 600; 
+            font-size: 0.9em; 
+            border: 1px solid #ddd; 
+            color: var(--aws-blue);
+        }
+        
+        /* Codice Python e JSON */
+        pre {
+            background-color: var(--code-bg);
+            color: #D4D4D4;
+            padding: 25px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 15px;
+            line-height: 1.6;
+            border: 1px solid #333;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+        code { font-family: 'Consolas', 'Monaco', 'Courier New', monospace; }
+        .comment { color: #6A9955; font-style: italic; }
+        .keyword { color: #569CD6; font-weight: bold; }
+        .string { color: #CE9178; }
+        .function { color: #DCDCAA; }
+        
+        /* Box Informativi */
+        .info-box {
+            background-color: #E8F4F8;
+            border-left: 5px solid var(--aws-light-blue);
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .warning-box {
+            background-color: #FFF4E5;
+            border-left: 5px solid var(--aws-orange);
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .tip-box {
+            background-color: #E6F7FF;
+            border: 1px solid #91D5FF;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        footer { 
+            text-align: center; 
+            margin-top: 60px; 
+            padding: 40px; 
+            color: #666; 
+            font-size: 1em;
+            border-top: 2px solid #eee;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Il tuo primo Server in "Auto-Pilot" 🚀</h1>
+        <div class="subtitle">Impara a usare Python e AWS Lambda partendo da zero assoluto</div>
+        <div class="sponsor">Un laboratorio pratico offerto da <a href="http://www.marblemind.eu" target="_blank">www.marblemind.eu</a></div>
+    </header>
+
+    <!-- INTRODUZIONE E PANORAMICA -->
+    <div class="section-card" style="border-left-color: var(--aws-light-blue);">
+        <h2>🧭 Introduzione e Protagonisti</h2>
+        <p>Creare un server con un clic è facile, ma farlo creare in automatico da un pezzo di codice è il vero "superpotere" del Cloud. In questo laboratorio, trasformeremo un concetto complesso (l'infrastruttura come codice) in un'esperienza visiva e pratica, guidandoti in ogni singolo clic.</p>
+        
+        <p>Prima di iniziare, è utile capire quali "mattoncini" AWS stiamo per incastrare tra loro. Ecco una sintesi dei servizi coinvolti:</p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Servizio AWS</th>
+                    <th>Il suo ruolo nel mondo reale</th>
+                    <th>Cosa farà nel nostro laboratorio</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>VPC & Subnet</strong></td>
+                    <td>Il quartiere e la via di casa</td>
+                    <td>Fornirà l'indirizzo di rete al nostro nuovo server</td>
+                </tr>
+                <tr>
+                    <td><strong>Security Group</strong></td>
+                    <td>Il "buttafuori" all'ingresso</td>
+                    <td>Deciderà chi può connettersi al server (es. tramite SSH)</td>
+                </tr>
+                <tr>
+                    <td><strong>IAM Role</strong></td>
+                    <td>Il badge di sicurezza aziendale</td>
+                    <td>Darà alla nostra funzione Lambda il permesso di creare server</td>
+                </tr>
+                <tr>
+                    <td><strong>AWS Lambda</strong></td>
+                    <td>Il robot esecutore</td>
+                    <td>Leggerà il nostro codice Python e lo eseguirà su richiesta</td>
+                </tr>
+                <tr>
+                    <td><strong>Amazon EC2</strong></td>
+                    <td>Il computer fisico/virtuale</td>
+                    <td>Sarà il risultato finale: un server funzionante e pronto all'uso</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="info-box">
+            <strong>👋 Benvenuto nel Laboratorio!</strong> Se non hai mai programmato o usato AWS, sei nel posto giusto. L'obiettivo di oggi è scrivere un piccolo script che, premendo un pulsante, "ordinerà" ad AWS di accendere un nuovo computer virtuale per noi.
+        </div>
+    </div>
+
+    <!-- STEP 1 -->
+    <div class="section-card">
+        <h2>Step 1: Trovare l'indirizzo e il "Buttafuori" 🏠</h2>
+        <p>Per creare un server (EC2), AWS ha bisogno di sapere due cose: in quale "via" della rete metterlo (Subnet) e chi può entrarci (Security Group).</p>
+        
+        <h3>A. Troviamo la Subnet (La Via)</h3>
+        <ul class="instruction-list">
+            <li>Accedi alla tua console AWS. In alto a sinistra, nella barra di ricerca, scrivi <span class="highlight-click">VPC</span> e cliccaci sopra.</li>
+            <li>Nel menu a sinistra, clicca su <span class="highlight-click">Subnets</span>.</li>
+            <li>Vedrai una lista di elementi. Scegline uno qualsiasi e copia il suo <strong>Subnet ID</strong> (assomiglia a <code>subnet-0abcd1234...</code>). Incollalo in un blocco note sul tuo computer: ci servirà dopo!</li>
+        </ul>
+
+        <h3>B. Creiamo il Security Group (Il Buttafuori)</h3>
+        <ul class="instruction-list">
+            <li>Ora cerca <span class="highlight-click">EC2</span> nella barra di ricerca in alto e cliccaci.</li>
+            <li>Nel menu a sinistra (scorri un po' in basso), clicca su <span class="highlight-click">Security Groups</span>.</li>
+            <li>Clicca sul pulsante arancione <span class="highlight-click">Create security group</span> in alto a destra.</li>
+            <li><strong>Security group name:</strong> scrivi <code>Regole-Mio-Server</code>.</li>
+            <li><strong>Description:</strong> scrivi <code>Permette l'accesso al server</code>.</li>
+            <li>Scorri giù fino a <strong>Inbound rules</strong> (Regole in entrata) e clicca su <span class="highlight-click">Add rule</span>.</li>
+            <li>Sotto <em>Type</em> scegli <strong>SSH</strong>. Sotto <em>Source</em> scegli <strong>Anywhere-IPv4</strong>.</li>
+            <li>Scorri in fondo e clicca su <span class="highlight-click">Create security group</span>.</li>
+            <li>Nella pagina che si apre, copia il <strong>Security group ID</strong> (assomiglia a <code>sg-0987xyz...</code>) e salvalo nel tuo blocco note.</li>
+        </ul>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="section-card">
+        <h2>Step 2: Creare il Badge di Sicurezza (IAM Role) 🪪</h2>
+        <p>In AWS, i servizi non si fidano l'uno dell'altro. La nostra funzione Lambda (il robot) non ha il permesso di creare server (EC2). Dobbiamo crearle un "badge" con i permessi giusti.</p>
+        
+        <ul class="instruction-list">
+            <li>Cerca <span class="highlight-click">IAM</span> nella barra di ricerca in alto e clicca.</li>
+            <li>A sinistra, clicca su <span class="highlight-click">Roles</span> (Ruoli) e poi sul pulsante blu <span class="highlight-click">Create role</span>.</li>
+            <li>Seleziona <strong>AWS service</strong>, poi scegli <strong>Lambda</strong> dalla lista e clicca <span class="highlight-click">Next</span> in basso a destra.</li>
+            <li>Nella barra di ricerca delle policy, scrivi <code>AWSLambdaBasicExecutionRole</code>, premi Invio e metti la spunta nel quadratino accanto al risultato. Clicca <span class="highlight-click">Next</span>.</li>
+            <li><strong>Role name:</strong> scrivi <code>Badge-Per-Creare-Server</code>. Scorri in fondo e clicca <span class="highlight-click">Create role</span>.</li>
+            <li>Ora, nella lista dei ruoli, cerca il tuo <code>Badge-Per-Creare-Server</code> e cliccaci sopra.</li>
+            <li>A destra, clicca su <span class="highlight-click">Add permissions</span> e poi su <span class="highlight-click">Create inline policy</span>.</li>
+            <li>Clicca sulla linguetta <strong>JSON</strong> (in alto a destra nell'editor nero) e cancella tutto quello che c'è scritto. Incolla questo codice esatto:</li>
+        </ul>
+
+<pre><code>{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "ec2:RunInstances",
+                "ec2:CreateTags"
+            ],
+            "Resource": "*"
+        }
+    ]
+}</code></pre>
+        <ul class="instruction-list">
+            <li>Clicca su <span class="highlight-click">Next</span>. Dai il nome <code>Permessi-EC2</code> e clicca su <span class="highlight-click">Create policy</span>. Il badge è pronto!</li>
+        </ul>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="section-card">
+        <h2>Step 3: Scrivere il Codice Python nella Lambda 🧠</h2>
+        <p>Ora uniamo i pezzi. Creeremo la funzione Lambda e le daremo le istruzioni in Python.</p>
+        
+        <ul class="instruction-list">
+            <li>Cerca <span class="highlight-click">Lambda</span> nella barra di ricerca in alto e clicca.</li>
+            <li>Clicca sul pulsante arancione <span class="highlight-click">Create function</span>.</li>
+            <li><strong>Function name:</strong> scrivi <code>CreaMioServer</code>.</li>
+            <li><strong>Runtime:</strong> scegli <strong>Python 3.12</strong> (o una versione più recente).</li>
+            <li>Apri la tendina <strong>Change default execution role</strong>. Scegli <em>Use an existing role</em> e seleziona il tuo <code>Badge-Per-Creare-Server</code>.</li>
+            <li>Clicca <span class="highlight-click">Create function</span> in basso a destra.</li>
+        </ul>
+
+        <h3>Il Codice (Non spaventarti, è tutto spiegato!)</h3>
+        <p>Scorri la pagina fino a trovare l'editor di codice con lo sfondo nero. Cancella tutto il codice presente e incolla quello qui sotto. <strong>Importante:</strong> Sostituisci i valori in arancione con quelli che hai salvato nel blocco note!</p>
+
+<pre><code><span class="comment"># Boto3 è il "telecomando" che Python usa per parlare con AWS</span>
+<span class="keyword">import</span> boto3 
+
+<span class="comment"># Questa è la funzione principale che AWS avvia quando premiamo "Test"</span>
+<span class="keyword">def</span> <span class="function">lambda_handler</span>(event, context):
+    
+    <span class="comment"># 1. Prendiamo in mano il telecomando e diciamo che vogliamo usare EC2</span>
+    <span class="comment"># Nota: Cambia 'eu-west-1' se ti trovi in un'altra regione (es. eu-south-1 per Milano)</span>
+    telecomando_ec2 = boto3.client(<span class="string">'ec2'</span>, region_name=<span class="string">'eu-west-1'</span>)
+    
+    <span class="comment"># 2. Prepariamo i dati del nostro server (SOSTITUISCI I DATI QUI SOTTO!)</span>
+    <span class="comment"># AMI_ID è il sistema operativo. Questo è Amazon Linux 2023 (gratuito).</span>
+    AMI_ID = <span class="string">'ami-0c1c30571d2dae5c9'</span> 
+    TIPO_SERVER = <span class="string">'t2.micro'</span> <span class="comment"># Un server piccolo e gratuito</span>
+    
+    <span class="comment"># INCOLLA QUI I TUOI ID SALVATI NEL BLOCCO NOTE:</span>
+    MIA_SUBNET = <span class="string">'subnet-INCOLLA_QUI_IL_TUO_ID'</span>
+    MIO_SECURITY_GROUP = <span class="string">'sg-INCOLLA_QUI_IL_TUO_ID'</span>
+    
+    <span class="comment"># 3. Diamo l'ordine ad AWS di creare il server!</span>
+    <span class="keyword">try</span>:
+        risposta = telecomando_ec2.run_instances(
+            ImageId=AMI_ID,
+            InstanceType=TIPO_SERVER,
+            MinCount=1, <span class="comment"># Vogliamo minimo 1 server</span>
+            MaxCount=1, <span class="comment"># Vogliamo massimo 1 server</span>
+            SubnetId=MIA_SUBNET,
+            SecurityGroupIds=[MIO_SECURITY_GROUP],
+            TagSpecifications=[
+                {
+                    <span class="string">'ResourceType'</span>: <span class="string">'instance'</span>,
+                    <span class="string">'Tags'</span>: [{<span class="string">'Key'</span>: <span class="string">'Name'</span>, <span class="string">'Value'</span>: <span class="string">'Server-Automatico-Python'</span>}]
+                }
+            ]
+        )
+        
+        <span class="comment"># Se arriviamo qui, ha funzionato! Estraiamo l'ID del nuovo server.</span>
+        id_nuovo_server = risposta[<span class="string">'Instances'</span>][0][<span class="string">'InstanceId'</span>]
+        <span class="function">print</span>(f<span class="string">"Evviva! Server creato con successo. ID: {id_nuovo_server}"</span>)
+        
+        <span class="keyword">return</span> <span class="string">"Missione compiuta!"</span>
+        
+    <span class="keyword">except</span> Exception <span class="keyword">as</span> errore:
+        <span class="comment"># Se qualcosa va storto, stampiamo l'errore per capire il problema</span>
+        <span class="function">print</span>(f<span class="string">"Ops, c'è stato un problema: {errore}"</span>)
+        <span class="keyword">return</span> <span class="string">"Errore durante la creazione."</span>
+</code></pre>
+        <ul class="instruction-list">
+            <li>Dopo aver modificato i dati, clicca sul pulsante <span class="highlight-click">Deploy</span> (sopra il codice) per salvare le modifiche.</li>
+        </ul>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="section-card">
+        <h2>Step 4: Il Grande Test e la Pulizia Finale 🎯</h2>
+        <p>È il momento della verità. Facciamo partire il nostro codice.</p>
+        
+        <ul class="instruction-list">
+            <li>Sempre nella pagina della tua Lambda, clicca sul pulsante azzurro <span class="highlight-click">Test</span>.</li>
+            <li>Ti chiederà di creare un evento di test. Scrivi <code>MioTest</code> come <em>Event name</em>, scorri in basso e clicca su <span class="highlight-click">Save</span>.</li>
+            <li>Clicca di nuovo sul pulsante azzurro <span class="highlight-click">Test</span>.</li>
+            <li>Se vedi un riquadro verde con scritto <strong>"Missione compiuta!"</strong>, congratulazioni! Hai appena programmato il Cloud.</li>
+            <li>Per verificare con i tuoi occhi, cerca <span class="highlight-click">EC2</span> nella barra in alto, clicca su <strong>Instances</strong> (Istanze) a sinistra e vedrai il tuo nuovo <em>Server-Automatico-Python</em> in fase di avvio!</li>
+        </ul>
+
+        <div class="warning-box">
+            <strong>⚠️ FASE CRITICA: Non dimenticare di spegnere la luce!</strong><br>
+            Il cloud si paga a consumo. Ora che hai visto che funziona, seleziona il tuo nuovo server nella console EC2, clicca in alto a destra su <strong>Instance state</strong> e scegli <strong>Terminate instance</strong>. Questo distruggerà il server e bloccherà qualsiasi costo futuro.
+        </div>
+    </div>
+
+    <!-- RACCOMANDAZIONI FINALI -->
+    <div class="section-card" style="border-left-color: #4CAF50;">
+        <h2>💡 Consigli per l'Insegnamento e Best Practices</h2>
+        <p>Se stai seguendo o erogando questo laboratorio, tieni a mente questi punti chiave per evitare gli ostacoli più comuni tra i principianti:</p>
+        
+        <div class="tip-box">
+            <ul style="margin: 0; padding-left: 20px;">
+                <li><strong>La questione della "Region":</strong> I principianti spesso si perdono perché creano la Lambda a Francoforte e cercano il server a Milano. Assicurati di controllare in alto a destra nella console AWS in quale regione ti trovi (es. <code>eu-west-1</code> per Irlanda) e fai coincidere questo valore nel codice Python.</li>
+                <li style="margin-top: 10px;"><strong>L'AMI ID:</strong> L'ID del sistema operativo (<code>ami-...</code>) cambia frequentemente e varia da regione a regione. Se l'esecuzione fallisce con un errore di "Invalid AMI", puoi copiare un AMI ID aggiornato direttamente dalla schermata di lancio manuale di EC2.</li>
+                <li style="margin-top: 10px;"><strong>L'importanza del "Terminate":</strong> L'avviso nel box giallo è vitale. I principianti temono sempre di ricevere fatture altissime da AWS; distruggere le risorse a fine laboratorio costruisce fiducia nel processo di apprendimento.</li>
+            </ul>
+        </div>
+    </div>
+
+    <footer>
+        <h2>🎉 Missione Compiuta!</h2>
+        <p>Hai completato con successo il tuo primo laboratorio di automazione Cloud unendo IAM, EC2 e Lambda.</p>
+        <p>Per scoprire come trasformare queste basi in competenze professionali avanzate, esplora i percorsi formativi e le consulenze su <a href="http://www.marblemind.eu" target="_blank">www.marblemind.eu</a>.</p>
+    </footer>
+
+</body>
+</html>

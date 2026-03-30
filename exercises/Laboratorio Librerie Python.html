@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Librerie e Moduli in Python | Marblemind</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            line-height: 1.6; 
+            color: #333; 
+            max-width: 950px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background-color: #f4f7f6;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3, h4 { color: #2c3e50; }
+        .header { 
+            text-align: center; 
+            margin-bottom: 40px; 
+            padding-bottom: 20px; 
+            border-bottom: 2px solid #eee; 
+        }
+        .exercise { 
+            background: #fafafa; 
+            border-left: 5px solid #3498db; 
+            padding: 20px; 
+            margin-bottom: 40px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .duration { 
+            display: inline-block;
+            background-color: #e74c3c; 
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+        .code-block { 
+            background: #282c34; 
+            color: #abb2bf; 
+            padding: 15px; 
+            border-radius: 5px; 
+            font-family: 'Courier New', Courier, monospace; 
+            overflow-x: auto; 
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        .step-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .step-list li {
+            margin-bottom: 20px;
+            padding-left: 80px; 
+            position: relative;
+            border-bottom: 1px dashed #ddd;
+            padding-bottom: 15px;
+            min-height: 24px;
+        }
+        .step-list li::before {
+            content: "Passo " counter(step-counter) ":";
+            counter-increment: step-counter;
+            color: #3498db;
+            position: absolute;
+            left: 0;
+            top: 0;
+            font-weight: bold;
+            font-size: 0.95em;
+            width: 70px; 
+        }
+        .step-list {
+            counter-reset: step-counter;
+        }
+        .footer { 
+            text-align: center; 
+            margin-top: 50px; 
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 0.9em; 
+            color: #777; 
+        }
+        a { color: #3498db; text-decoration: none; font-weight: bold; }
+        a:hover { text-decoration: underline; }
+        .note {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            font-size: 0.95em;
+        }
+        .theory-box {
+            background-color: #e8f4f8;
+            border-left: 4px solid #5bc0de;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .theory-box h3 { margin-top: 0; color: #31708f; margin-bottom: 15px;}
+        code {
+            background-color: #eef2f5;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            color: #c7254e;
+        }
+        .highlight { font-weight: bold; color: #e74c3c; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Laboratorio: Le Librerie in Python</h1>
+            <p>Materiale didattico a cura di <a href="http://www.marblemind.eu" target="_blank">www.marblemind.eu</a></p>
+            <p><em>Obiettivo: Imparare a espandere le funzionalità di Python importando e installando moduli esterni.</em></p>
+        </header>
+
+        <main>
+            <!-- TEORIA BASE -->
+            <section class="theory-box">
+                <h3>🧠 Teoria: Cos'è una Libreria?</h3>
+                <p>Immagina Python come una <strong>cassetta degli attrezzi base</strong>. Quando lo installi, hai a disposizione martello, cacciavite e pinze (funzioni come <code>print()</code>, <code>input()</code>, <code>len()</code>). Ma cosa succede se devi fare un lavoro specifico, come l'idraulico o l'elettricista?</p>
+                <p>Invece di costruire nuovi attrezzi da zero, vai in un negozio e compri un "kit specifico". In Python, questi kit si chiamano <strong>Librerie</strong> (o Moduli).</p>
+                
+                <h4>Esistono due tipi di librerie:</h4>
+                <ol>
+                    <li><strong>Librerie Standard (Built-in):</strong> Sono già incluse in Python quando lo installi, ma sono "nascoste" per non appesantire il programma. Per usarle basta usare il comando <code>import</code> (es. <code>import math</code>).</li>
+                    <li><strong>Librerie Esterne (Third-party):</strong> Create dalla community (come <em>Boto3</em> per AWS o <em>Pandas</em> per i dati). Non sono presenti sul tuo PC. Prima di importarle, devi <strong>scaricarle e installarle</strong> da internet usando un programma chiamato <strong>PIP</strong> (Python Package Installer).</li>
+                </ol>
+                <p><strong>Come si installa una libreria esterna?</strong><br>
+                Si apre il <em>Terminale</em> (non il codice Python!) e si digita: <code>pip install nome_libreria</code>. <br>
+                <em>(Nota: Se usi Google Colab, devi aggiungere un punto esclamativo all'inizio: <code>!pip install nome_libreria</code>)</em>.</p>
+            </section>
+
+            <!-- ESERCITAZIONE 1 -->
+            <section class="exercise">
+                <h2>Esercitazione 1: La Libreria Standard (Math e Random)</h2>
+                <div class="duration">⏱️ Durata stimata: 15 minuti</div>
+                <p>Iniziamo utilizzando due librerie già presenti nel tuo computer. Creeremo un piccolo script che genera un numero casuale e ne calcola la radice quadrata.</p>
+
+                <h3>Guida Passo-Passo:</h3>
+                <ol class="step-list">
+                    <li><strong>Importazione:</strong> Crea un nuovo file chiamato <code>matematica.py</code> (o una nuova cella su Colab). Alla primissima riga, importa le due librerie necessarie:
+<pre class="code-block">import random
+import math</pre>
+                    </li>
+                    <li><strong>Generare un numero casuale:</strong> Usa la funzione <code>randint(min, max)</code> che si trova <em>dentro</em> la libreria random. Per usarla, devi scrivere <code>nome_libreria.nome_funzione</code>.
+<pre class="code-block">numero_segreto = random.randint(1, 100)
+print(f"Il numero casuale generato è: {numero_segreto}")</pre>
+                    </li>
+                    <li><strong>Calcolare la radice quadrata:</strong> Ora usiamo la libreria <code>math</code> e la sua funzione <code>sqrt()</code> (Square Root).
+<pre class="code-block">radice = math.sqrt(numero_segreto)
+print(f"La radice quadrata di {numero_segreto} è {radice:.2f}")</pre>
+                    </li>
+                    <li><strong>Esecuzione:</strong> Esegui lo script più volte. Noterai che il numero cambia ad ogni esecuzione, dimostrando che il modulo <code>random</code> sta facendo il suo lavoro!</li>
+                </ol>
+            </section>
+
+            <!-- ESERCITAZIONE 2 -->
+            <section class="exercise">
+                <h2>Esercitazione 2: Lavorare con le Date (Datetime)</h2>
+                <div class="duration">⏱️ Durata stimata: 20 minuti</div>
+                <p>Gestire il tempo (giorni, ore, fusi orari) in programmazione è difficilissimo se fatto da zero. Fortunatamente, Python ha la libreria standard <code>datetime</code>. Qui impareremo un modo diverso di importare: importare <em>solo uno strumento specifico</em> dalla cassetta.</p>
+
+                <h3>Guida Passo-Passo:</h3>
+                <ol class="step-list">
+                    <li><strong>Importazione Specifica:</strong> Invece di importare tutta la libreria, importiamo solo l'oggetto "datetime" e l'oggetto "timedelta" (che serve per fare calcoli coi giorni).
+<pre class="code-block">from datetime import datetime, timedelta</pre>
+                    </li>
+                    <li><strong>Ottenere l'ora attuale:</strong> Usa la funzione <code>now()</code>.
+<pre class="code-block">oggi = datetime.now()
+print(f"Data e ora grezza: {oggi}")</pre>
+                    </li>
+                    <li><strong>Formattare la data:</strong> Il formato "grezzo" è brutto da leggere. Usiamo il metodo <code>strftime</code> (String Format Time) per renderlo leggibile per un utente italiano (Giorno/Mese/Anno).
+<pre class="code-block">data_formattata = oggi.strftime("%d/%m/%Y %H:%M:%S")
+print(f"Data formattata: {data_formattata}")</pre>
+                    </li>
+                    <li><strong>Viaggiare nel tempo:</strong> Vogliamo sapere che giorno sarà tra esattamente 30 giorni. Usiamo <code>timedelta</code>.
+<pre class="code-block">scadenza = oggi + timedelta(days=30)
+print(f"La tua iscrizione scadrà il: {scadenza.strftime('%d/%m/%Y')}")</pre>
+                    </li>
+                </ol>
+                <div class="note">
+                    <strong>Nota bene:</strong> Usando <code>from ... import ...</code> non hai più bisogno di scrivere il nome della libreria prima della funzione. Hai importato l'attrezzo direttamente sul tuo banco di lavoro!
+                </div>
+            </section>
+
+            <!-- ESERCITAZIONE 3 -->
+            <section class="exercise">
+                <h2>Esercitazione 3: Installare una Libreria Esterna (Requests)</h2>
+                <div class="duration">⏱️ Durata stimata: 25 minuti</div>
+                <p>Ora facciamo sul serio. Vogliamo che il nostro script Python si colleghi a un sito web e scarichi dei dati. Per farlo ci serve la libreria <code>requests</code>, che <strong>non è inclusa</strong> in Python. Dobbiamo installarla tramite PIP.</p>
+
+                <h3>Guida Passo-Passo:</h3>
+                <ol class="step-list">
+                    <li><strong>Installazione tramite PIP:</strong> 
+                        <br>👉 <em>Se sei sul tuo PC (VS Code/Terminale):</em> Apri il terminale e digita <code>pip install requests</code> e premi Invio.
+                        <br>👉 <em>Se sei su Google Colab:</em> Crea una cella di codice, scrivi <code>!pip install requests</code> ed eseguila.
+                    </li>
+                    <li><strong>Importazione:</strong> Ora che è installata, possiamo importarla nel nostro script.
+<pre class="code-block">import requests
+import json</pre>
+                    </li>
+                    <li><strong>Effettuare una richiesta Web (GET):</strong> Interrogheremo un'API pubblica e gratuita che restituisce una barzelletta (in inglese) in formato JSON.
+<pre class="code-block">url = "https://official-joke-api.appspot.com/random_joke"
+print("Mi sto connettendo al server...")
+
+# Effettuiamo la richiesta
+risposta = requests.get(url)</pre>
+                    </li>
+                    <li><strong>Controllo e Lettura dei Dati:</strong> Verifichiamo che la richiesta sia andata a buon fine (Status Code 200 = OK) e stampiamo il risultato.
+<pre class="code-block">if risposta.status_code == 200:
+  # Convertiamo la risposta testuale in un dizionario Python
+  dati = risposta.json()
+  
+  print("\n--- BARZELLETTA DEL GIORNO ---")
+  print(f"Domanda: {dati['setup']}")
+  print(f"Risposta: {dati['punchline']}")
+  print("------------------------------")
+else:
+  print(f"Errore di connessione. Codice: {risposta.status_code}")</pre>
+                    </li>
+                    <li><strong>Esecuzione:</strong> Lancia lo script! Hai appena creato un programma che comunica con un server esterno su internet. Questo è l'esatto principio con cui, nel prossimo modulo, comunicheremo con i server di AWS usando Boto3!</li>
+                </ol>
+            </section>
+
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2024 - Corso Python ed AWS. Tutti i diritti riservati.</p>
+            <p>Scopri i nostri percorsi formativi su <a href="http://www.marblemind.eu" target="_blank">www.marblemind.eu</a></p>
+        </footer>
+    </div>
+</body>
+</html>

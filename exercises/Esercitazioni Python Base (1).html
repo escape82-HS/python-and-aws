@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Esercitazioni Python - Livello Base | Marblemind</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            line-height: 1.6; 
+            color: #333; 
+            max-width: 900px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background-color: #f4f7f6;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3, h4 { color: #2c3e50; }
+        .header { 
+            text-align: center; 
+            margin-bottom: 40px; 
+            padding-bottom: 20px; 
+            border-bottom: 2px solid #eee; 
+        }
+        .exercise { 
+            background: #fafafa; 
+            border-left: 5px solid #3498db; 
+            padding: 20px; 
+            margin-bottom: 40px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .duration { 
+            display: inline-block;
+            background-color: #e74c3c; 
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+        .code-block { 
+            background: #282c34; 
+            color: #abb2bf; 
+            padding: 15px; 
+            border-radius: 5px; 
+            font-family: 'Courier New', Courier, monospace; 
+            overflow-x: auto; 
+            margin: 15px 0;
+        }
+        .task-list, .step-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .task-list li {
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+        }
+        .task-list li::before {
+            content: "✓";
+            color: #27ae60;
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+        .step-list li {
+            margin-bottom: 15px;
+            padding-left: 30px;
+            position: relative;
+            border-bottom: 1px dashed #ddd;
+            padding-bottom: 10px;
+        }
+        .step-list li::before {
+            content: "Passo " counter(step-counter) ":";
+            counter-increment: step-counter;
+            color: #3498db;
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        .step-list {
+            counter-reset: step-counter;
+        }
+        .footer { 
+            text-align: center; 
+            margin-top: 50px; 
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 0.9em; 
+            color: #777; 
+        }
+        a { color: #3498db; text-decoration: none; font-weight: bold; }
+        a:hover { text-decoration: underline; }
+        .note {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px 15px;
+            margin: 15px 0;
+            font-size: 0.95em;
+        }
+        .hint {
+            background-color: #e8f4f8;
+            border-left: 4px solid #5bc0de;
+            padding: 10px 15px;
+            margin: 15px 0;
+            font-size: 0.95em;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Laboratorio Pratico: Fondamenti di Python</h1>
+            <p>Materiale didattico a cura di <a href="http://www.marblemind.eu" target="_blank">www.marblemind.eu</a></p>
+            <p><em>Obiettivo: Imparare a configurare l'ambiente, gestire variabili, input/output e strutture di controllo.</em></p>
+        </header>
+
+        <main>
+            <!-- ESERCITAZIONE 1 -->
+            <section class="exercise">
+                <h2>Esercitazione 1: Setup dell'Ambiente e il tuo Primo Script</h2>
+                <div class="duration">⏱️ Durata stimata: 60 minuti</div>
+                <p>In questa prima fase prepareremo la nostra postazione di lavoro, essenziale per tutto il corso, e scriveremo il nostro primo programma interattivo.</p>
+                
+                <h3>Obiettivi:</h3>
+                <ul class="task-list">
+                    <li>Installazione di Python e verifica dal terminale.</li>
+                    <li>Creazione della cartella di lavoro del corso.</li>
+                    <li>Utilizzo delle funzioni base <code>print()</code> e <code>input()</code>.</li>
+                    <li>Assegnazione di variabili e conversione di tipo (Casting).</li>
+                </ul>
+
+                <h3>Guida Passo-Passo:</h3>
+                <ol class="step-list">
+                    <li><strong>Prepara l'ambiente:</strong> Apri il tuo IDE (es. VS Code). Crea una nuova cartella chiamata <code>Corso_Python_AWS</code> sul tuo Desktop. All'interno di questa cartella, crea un nuovo file e chiamalo <code>saluto.py</code>. Assicurati di includere l'estensione <code>.py</code>!</li>
+                    <li><strong>Il primo output:</strong> Alla riga 1 del tuo file, scrivi il comando per stampare un messaggio di benvenuto. Usa la funzione <code>print("Benvenuto al corso Marblemind!")</code>. Esegui lo script per verificare che funzioni.</li>
+                    <li><strong>Chiedere informazioni (Input):</strong> Ora vogliamo che il programma ci chieda il nome. Crea una variabile chiamata <code>nome</code> e assegnale il valore restituito dalla funzione <code>input()</code>. Esempio: <code>nome = input("Come ti chiami? ")</code>.</li>
+                    <li><strong>Chiedere l'età:</strong> Fai la stessa cosa per l'età, creando una variabile <code>eta_stringa</code>. Ricorda che <code>input()</code> legge tutto come se fosse testo (stringa).</li>
+                    <li><strong>Conversione del dato (Casting):</strong> Per fare calcoli matematici, l'età deve essere un numero. Crea una nuova variabile <code>eta_numero</code> e usa la funzione <code>int()</code> per convertire la stringa. Esempio: <code>eta_numero = int(eta_stringa)</code>.</li>
+                    <li><strong>Calcolo e Output finale:</strong> Calcola l'anno di nascita sottraendo <code>eta_numero</code> all'anno corrente (es. 2024). Infine, usa una <em>f-string</em> per stampare un messaggio finale: <code>print(f"Ciao {nome}, sei nato nel {anno_nascita}")</code>.</li>
+                </ol>
+
+                <div class="note">
+                    <strong>Attenzione agli errori comuni:</strong> Controlla sempre di aver chiuso tutte le parentesi tonde <code>()</code> e le virgolette <code>""</code>. Se il terminale mostra un <em>SyntaxError</em>, controlla la riga indicata dall'errore!
+                </div>
+            </section>
+
+            <!-- ESERCITAZIONE 2 -->
+            <section class="exercise">
+                <h2>Esercitazione 2: Calcolatore di Spese Aziendali (Variabili e I/O)</h2>
+                <div class="duration">⏱️ Durata stimata: 50 minuti</div>
+                <p>Ora che sappiamo come prendere dati in input e convertirli, creiamo uno script utile per calcolare i rimborsi spesa di una trasferta aziendale.</p>
+                
+                <h3>Obiettivi:</h3>
+                <ul class="task-list">
+                    <li>Gestione di variabili numeriche decimali (Float).</li>
+                    <li>Operazioni matematiche di base (+).</li>
+                    <li>Formattazione avanzata delle stringhe per mostrare i decimali.</li>
+                </ul>
+
+                <h3>Guida Passo-Passo:</h3>
+                <ol class="step-list">
+                    <li>Crea un nuovo file chiamato <code>rimborsi.py</code> nella tua cartella di lavoro.</li>
+                    <li>Chiedi all'utente il costo del volo usando <code>input()</code>. Poiché i costi possono avere i centesimi, converti subito l'input in un numero decimale usando <code>float()</code> invece di <code>int()</code>. Salva il risultato in una variabile <code>costo_volo</code>.</li>
+                    <li>Ripeti il passaggio precedente per chiedere il <code>costo_hotel</code> e il <code>costo_pasti</code>.</li>
+                    <li>Crea una variabile <code>totale_spese</code> che sia la somma delle tre variabili precedenti.</li>
+                    <li>Stampa un resoconto finale. Per fare in modo che i numeri mostrino sempre due cifre decimali (es. 150.50 invece di 150.5), usa questa sintassi nelle f-string: <code>f"Volo: € {costo_volo:.2f}"</code>.</li>
+                </ol>
+
+                <div class="hint">
+                    <strong>Suggerimento:</strong> Puoi concatenare le funzioni per scrivere meno codice. Invece di fare due passaggi, puoi scrivere: <br>
+                    <code>costo = float(input("Inserisci costo: "))</code>
+                </div>
+            </section>
+
+            <!-- ESERCITAZIONE 3 -->
+            <section class="exercise">
+                <h2>Esercitazione 3: Il Controllo degli Accessi (If/Else e Cicli While)</h2>
+                <div class="duration">⏱️ Durata stimata: 60 minuti</div>
+                <p>Introduciamo la logica condizionale e i cicli. Simuleremo un sistema di login che continua a chiedere la password finché non è corretta o finché non si esauriscono i tentativi.</p>
+                
+                <h3>Obiettivi:</h3>
+                <ul class="task-list">
+                    <li>Utilizzo del ciclo <code>while</code> per ripetere un'azione.</li>
+                    <li>Costrutti condizionali <code>if</code>, <code>else</code>.</li>
+                    <li>Gestione di un contatore.</li>
+                </ul>
+
+                <h3>Guida Passo-Passo:</h3>
+                <ol class="step-list">
+                    <li>Crea un file chiamato <code>login.py</code>.</li>
+                    <li>Definisci le tue variabili iniziali: <br>
+                        - <code>password_segreta = "python2024"</code><br>
+                        - <code>tentativi_fatti = 0</code>
+                    </li>
+                    <li>Scrivi l'intestazione del ciclo <code>while</code>: vogliamo che il ciclo continui <em>mentre</em> i tentativi fatti sono minori di 3. <code>while tentativi_fatti < 3:</code></li>
+                    <li><strong>Dentro il ciclo (ricorda l'indentazione!):</strong> Chiedi all'utente di inserire la password con <code>input()</code>.</li>
+                    <li>Sempre dentro il ciclo, aumenta il contatore dei tentativi: <code>tentativi_fatti = tentativi_fatti + 1</code>.</li>
+                    <li>Aggiungi un blocco <code>if</code>: se la password inserita è uguale (<code>==</code>) alla password segreta, stampa "Accesso consentito" e usa il comando <code>break</code> per interrompere forzatamente il ciclo.</li>
+                    <li>Aggiungi un blocco <code>else</code>: se la password è sbagliata, stampa "Password errata. Riprova."</li>
+                    <li><strong>Fuori dal ciclo (senza indentazione):</strong> Controlla se l'utente ha fallito. <code>if tentativi_fatti == 3 and password_inserita != password_segreta:</code> stampa "Account bloccato, contatta www.marblemind.eu".</li>
+                </ol>
+            </section>
+
+            <!-- ESERCITAZIONE 4 -->
+            <section class="exercise">
+                <h2>Esercitazione 4: Analisi di una stringa (Cicli For)</h2>
+                <div class="duration">⏱️ Durata stimata: 50 minuti</div>
+                <p>I cicli <code>for</code> sono fondamentali in Python per iterare (scorrere) sugli elementi di una sequenza, come i caratteri di una parola.</p>
+                
+                <h3>Obiettivi:</h3>
+                <ul class="task-list">
+                    <li>Utilizzo del ciclo <code>for</code> su una stringa.</li>
+                    <li>Utilizzo dell'operatore <code>in</code>.</li>
+                    <li>Metodi delle stringhe (es. <code>.lower()</code>).</li>
+                </ul>
+
+                <h3>Guida Passo-Passo:</h3>
+                <ol class="step-list">
+                    <li>Crea un file chiamato <code>analizzatore.py</code>.</li>
+                    <li>Chiedi all'utente di inserire una frase e salvala nella variabile <code>frase</code>.</li>
+                    <li>Prepara un contatore impostandolo a zero: <code>numero_vocali = 0</code>.</li>
+                    <li>Definisci una stringa di riferimento con le vocali: <code>vocali = "aeiou"</code>.</li>
+                    <li>Inizia il ciclo: <code>for lettera in frase:</code> (Questo significa: per ogni singola lettera presente nella frase, esegui il blocco di codice seguente).</li>
+                    <li><strong>Dentro il ciclo:</strong> Per evitare problemi con le maiuscole, trasforma la lettera in minuscolo prima di controllarla: <code>lettera_min = lettera.lower()</code>.</li>
+                    <li>Usa un <code>if</code> per controllare se la lettera minuscola è presente nella stringa delle vocali: <code>if lettera_min in vocali:</code></li>
+                    <li>Se è vero, incrementa il contatore: <code>numero_vocali += 1</code>.</li>
+                    <li><strong>Fuori dal ciclo:</strong> Stampa il risultato finale mostrando la frase originale e quante vocali contiene.</li>
+                </ol>
+            </section>
+
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2024 - Corso Python ed AWS. Tutti i diritti riservati.</p>
+            <p>Scopri i nostri corsi avanzati su <a href="http://www.marblemind.eu" target="_blank">www.marblemind.eu</a></p>
+        </footer>
+    </div>
+</body>
+</html>

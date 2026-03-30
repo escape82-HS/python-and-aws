@@ -1,0 +1,247 @@
+<?php
+// Configura username e password
+$username = 'python';
+$password = 'BotoPass2026!';
+
+// Chiede l'autenticazione
+if (!isset($_SERVER['PHP_AUTH_USER']) || !isset($_SERVER['PHP_AUTH_PW']) || 
+    $_SERVER['PHP_AUTH_USER'] !== $username || $_SERVER['PHP_AUTH_PW'] !== $password) {
+    header('WWW-Authenticate: Basic realm="Area Riservata"');
+    header('HTTP/1.0 401 Unauthorized');
+    echo 'Accesso negato.';
+    exit;
+}
+?>
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Introduzione a Boto3 | Marblemind</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            line-height: 1.6; 
+            color: #333; 
+            max-width: 950px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background-color: #f4f7f6;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3, h4 { color: #232f3e; } /* Stile AWS */
+        .header { 
+            text-align: center; 
+            margin-bottom: 40px; 
+            padding-bottom: 20px; 
+            border-bottom: 2px solid #eee; 
+        }
+        .exercise { 
+            background: #fafafa; 
+            border-left: 5px solid #ff9900; /* AWS Orange */
+            padding: 20px; 
+            margin-bottom: 40px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .duration { 
+            display: inline-block;
+            background-color: #e74c3c; 
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+        .code-block { 
+            background: #282c34; 
+            color: #abb2bf; 
+            padding: 15px; 
+            border-radius: 5px; 
+            font-family: 'Courier New', Courier, monospace; 
+            overflow-x: auto; 
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        .step-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .step-list li {
+            margin-bottom: 20px;
+            padding-left: 80px; 
+            position: relative;
+            border-bottom: 1px dashed #ddd;
+            padding-bottom: 15px;
+            min-height: 24px;
+        }
+        .step-list li::before {
+            content: "Passo " counter(step-counter) ":";
+            counter-increment: step-counter;
+            color: #ff9900;
+            position: absolute;
+            left: 0;
+            top: 0;
+            font-weight: bold;
+            font-size: 0.95em;
+            width: 70px; 
+        }
+        .step-list {
+            counter-reset: step-counter;
+        }
+        .footer { 
+            text-align: center; 
+            margin-top: 50px; 
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 0.9em; 
+            color: #777; 
+        }
+        a { color: #ff9900; text-decoration: none; font-weight: bold; }
+        a:hover { text-decoration: underline; }
+        .note {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            font-size: 0.95em;
+        }
+        .theory-box {
+            background-color: #e8f4f8;
+            border-left: 4px solid #5bc0de;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .theory-box h4 { margin-top: 0; color: #31708f; }
+        code {
+            background-color: #eef2f5;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            color: #c7254e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Laboratorio: Primi Passi con Boto3</h1>
+            <p>Materiale didattico a cura di <a href="http://www.marblemind.eu" target="_blank">www.marblemind.eu</a></p>
+            <p><em>Obiettivo: Comprendere l'SDK AWS per Python, configurare le credenziali e interagire con EC2 e S3.</em></p>
+        </header>
+
+        <main>
+            <!-- TEORIA BASE -->
+            <section class="theory-box">
+                <h4>🧠 Concetti Base: Cos'è Boto3?</h4>
+                <p><strong>Boto3</strong> è l'SDK (Software Development Kit) ufficiale di Amazon Web Services per Python. Permette di creare, configurare e gestire i servizi AWS (come EC2 e S3) scrivendo codice Python invece di cliccare sulla console web.</p>
+                <p>Boto3 offre due modi principali per interagire con AWS:</p>
+                <ul>
+                    <li><strong>Client:</strong> Un'interfaccia a basso livello. Restituisce le risposte esatte delle API AWS sotto forma di grossi dizionari Python. È completo ma richiede più codice per estrarre i dati.</li>
+                    <li><strong>Resource:</strong> Un'interfaccia ad alto livello (Object-Oriented). Restituisce oggetti Python facili da manipolare (es. <code>istanza.id</code> o <code>istanza.state</code>). È più semplice da usare per i principianti.</li>
+                </ul>
+            </section>
+
+            <!-- ESERCITAZIONE 1 -->
+            <section class="exercise">
+                <h2>Esercitazione 1: Setup e Lettura Risorse (EC2)</h2>
+                <div class="duration">⏱️ Durata stimata: 30 minuti</div>
+                <p>Iniziamo configurando l'ambiente e scrivendo uno script di sola lettura (Read-Only) per interrogare il nostro account AWS e scoprire quali istanze EC2 sono attualmente in esecuzione.</p>
+
+                <h3>Guida Passo-Passo:</h3>
+                <ol class="step-list">
+                    <li><strong>Installazione:</strong> Apri il terminale del tuo IDE e installa la libreria digitando: <code>pip install boto3</code>.</li>
+                    <li><strong>Configurazione Credenziali:</strong> Boto3 ha bisogno di sapere chi sei per accedere ad AWS. Se hai già installato la AWS CLI, digita <code>aws configure</code> nel terminale e inserisci la tua <em>Access Key</em>, <em>Secret Key</em> e la regione di default (es. <code>eu-west-1</code>).</li>
+                    <li><strong>Il primo script:</strong> Crea un file chiamato <code>lista_ec2.py</code>. Inizia importando la libreria:
+<pre class="code-block">import boto3</pre>
+                    </li>
+                    <li><strong>Creazione della Resource:</strong> Inizializza l'interfaccia ad alto livello per il servizio EC2.
+<pre class="code-block">ec2 = boto3.resource('ec2')
+print("Connessione ad AWS stabilita con successo!")</pre>
+                    </li>
+                    <li><strong>Interrogazione (Listing):</strong> Usa un ciclo <code>for</code> per scorrere tutte le istanze presenti nel tuo account e stampare il loro ID e lo stato attuale (es. running, stopped).
+<pre class="code-block">print("\n--- Elenco Istanze EC2 ---")
+# ec2.instances.all() recupera tutte le istanze
+for istanza in ec2.instances.all():
+  id_istanza = istanza.id
+  stato = istanza.state['Name']
+  tipo = istanza.instance_type
+  
+  print(f"ID: {id_istanza} | Tipo: {tipo} | Stato: {stato}")</pre>
+                    </li>
+                    <li><strong>Esecuzione:</strong> Salva il file ed eseguilo. Se ricevi un errore <code>NoCredentialsError</code>, significa che il passaggio 2 non è andato a buon fine. Chiedi supporto al docente!</li>
+                </ol>
+            </section>
+
+            <!-- ESERCITAZIONE 2 -->
+            <section class="exercise">
+                <h2>Esercitazione 2: Gestione Storage (Amazon S3)</h2>
+                <div class="duration">⏱️ Durata stimata: 40 minuti</div>
+                <p>Ora passeremo all'azione creando risorse. Utilizzeremo Boto3 per creare un nuovo Bucket S3 e caricarci dentro un file di testo generato dal nostro script Python.</p>
+
+                <div class="note">
+                    <strong>Regola d'oro di S3:</strong> Il nome di un Bucket S3 deve essere <strong>univoco a livello globale</strong> in tutto il mondo AWS. Non puoi chiamarlo "test-bucket". Usa un prefisso unico, ad esempio il tuo nome e la data di oggi (es. <code>marblemind-mario-20240512</code>).
+                </div>
+
+                <h3>Guida Passo-Passo:</h3>
+                <ol class="step-list">
+                    <li><strong>Preparazione:</strong> Crea un nuovo file chiamato <code>gestione_s3.py</code>.</li>
+                    <li><strong>Inizializzazione Client:</strong> Questa volta useremo il <code>client</code> per S3.
+<pre class="code-block">import boto3
+
+# Inizializziamo il client S3
+s3_client = boto3.client('s3')
+
+# Definisci il nome del tuo bucket (CAMBIALO CON UNO UNIVOCO!)
+nome_bucket = "marblemind-tuonome-12345"</pre>
+                    </li>
+                    <li><strong>Creazione del Bucket:</strong> Aggiungi il codice per creare il bucket. Usiamo un blocco <code>try-except</code> per gestire l'errore nel caso in cui il nome scelto esista già.
+<pre class="code-block">try:
+  print(f"Tentativo di creazione del bucket: {nome_bucket}...")
+  # Nota: se usi una regione diversa da us-east-1, serve specificare la LocationConstraint
+  s3_client.create_bucket(
+      Bucket=nome_bucket,
+      CreateBucketConfiguration={
+          'LocationConstraint': 'eu-west-1' # Cambia con la tua regione
+      }
+  )
+  print("Bucket creato con successo!")
+except Exception as e:
+  print(f"Errore durante la creazione: {e}")</pre>
+                    </li>
+                    <li><strong>Creazione di un file locale:</strong> Facciamo in modo che Python crei un semplice file di testo sul nostro computer.
+<pre class="code-block">nome_file = "saluto_aws.txt"
+
+# Creiamo un file e ci scriviamo dentro
+with open(nome_file, "w") as file:
+  file.write("Ciao AWS! Questo file è stato caricato tramite Python e Boto3 durante il corso Marblemind.")
+  
+print(f"File locale '{nome_file}' creato.")</pre>
+                    </li>
+                    <li><strong>Upload su S3:</strong> Ora usiamo il metodo <code>upload_file</code> per inviare il file appena creato al nostro nuovo bucket.
+<pre class="code-block">print("Inizio caricamento su S3...")
+s3_client.upload_file(
+  Filename=nome_file,      # Il file sul tuo PC
+  Bucket=nome_bucket,      # Il bucket di destinazione
+  Key="documenti/saluto.txt" # Il nome e percorso che avrà su S3
+)
+print("Caricamento completato! Controlla la console AWS.")</pre>
+                    </li>
+                    <li><strong>Verifica:</strong> Esegui lo script. Vai sulla console web di AWS, apri il servizio S3, cerca il tuo bucket e verifica che all'interno ci sia una cartella "documenti" contenente il tuo file!</li>
+                </ol>
+            </section>
+
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2024 - Corso Python ed AWS. Tutti i diritti riservati.</p>
+            <p>Scopri i nostri corsi avanzati di automazione su <a href="http://www.marblemind.eu" target="_blank">www.marblemind.eu</a></p>
+        </footer>
+    </div>
+</body>
+</html>

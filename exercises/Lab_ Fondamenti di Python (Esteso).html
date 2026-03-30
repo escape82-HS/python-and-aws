@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab: Fondamenti di Python con Prove Pratiche</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .code-block { background-color: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; font-family: 'Courier New', Courier, monospace; font-size: 0.9rem; margin-bottom: 1rem; }
+        .terminal-block { background-color: #000000; color: #00ff00; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; font-family: 'Courier New', Courier, monospace; font-size: 0.85rem; margin-bottom: 1rem; border: 1px solid #333; }
+        .step-number { display: inline-flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; border-radius: 9999px; background-color: #10b981; color: white; font-weight: bold; margin-right: 0.75rem; flex-shrink: 0; font-size: 1.2rem; }
+        .keyword { color: #569cd6; } 
+        .string { color: #ce9178; } 
+        .comment { color: #6a9955; } 
+        .function { color: #dcdcaa; } 
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 line-height-relaxed">
+
+    <div class="max-w-5xl mx-auto py-10 px-5">
+        
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-extrabold text-gray-900 mb-4">🐍 Lab: Fondamenti di Python</h1>
+            <p class="text-lg text-gray-600">Un percorso interattivo con <strong>prove pratiche</strong> per imparare le basi della programmazione: variabili, cicli, funzioni e librerie.</p>
+        </header>
+
+        <!-- Prerequisiti -->
+        <section class="bg-white p-6 rounded-lg shadow-md mb-8 border-l-4 border-green-500">
+            <h2 class="text-2xl font-bold mb-4 flex items-center"><span class="mr-2">💻</span> Prerequisiti e Setup</h2>
+            <ul class="list-disc pl-6 space-y-2 text-gray-700">
+                <li><strong>Python 3</strong> installato sul tuo computer.</li>
+                <li>Un editor di testo (es. <em>Visual Studio Code</em>, <em>Notepad++</em> o <em>Thonny</em>).</li>
+                <li>Crea una cartella chiamata <code>python_lab</code> sul tuo desktop. Salveremo tutti gli script qui dentro.</li>
+                <li>Apri il terminale (o Prompt dei comandi) e naviga nella cartella: <br>
+                    <code class="bg-gray-200 px-2 py-1 rounded text-sm">cd Desktop/python_lab</code>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Modulo 1 -->
+        <section class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-2xl font-bold mb-4 flex items-center"><span class="step-number">1</span> Variabili e Input/Output</h2>
+            <p class="mb-4 text-gray-700">Le <strong>variabili</strong> sono contenitori per i dati. L'<strong>Input</strong> riceve dati dall'utente, l'<strong>Output</strong> li stampa a schermo. In Python, usiamo <code>input()</code> e <code>print()</code>.</p>
+            
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-5 rounded-r-lg mt-6">
+                <h3 class="text-xl font-bold text-blue-800 mb-3">🛠️ Prova Pratica 1: Il Calcolatore di Età</h3>
+                <p class="mb-3 text-sm text-gray-700">Crea un file chiamato <strong><code>pratica1.py</code></strong> e inserisci questo codice:</p>
+                
+                <div class="code-block">
+<pre><code><span class="comment"># Chiediamo i dati all'utente</span>
+nome = <span class="function">input</span>(<span class="string">"Inserisci il tuo nome: "</span>)
+anno_nascita_str = <span class="function">input</span>(<span class="string">"In che anno sei nato? "</span>)
+
+<span class="comment"># Convertiamo la stringa in un numero intero (int) per fare calcoli matematici</span>
+anno_nascita = <span class="function">int</span>(anno_nascita_str)
+anno_corrente = <span class="string">2024</span>
+
+<span class="comment"># Calcoliamo l'età</span>
+eta = anno_corrente - anno_nascita
+
+<span class="comment"># Stampiamo il risultato usando una f-string (stringa formattata)</span>
+<span class="function">print</span>(<span class="string">f"\nCiao {nome}! Nel {anno_corrente} compi (o hai compiuto) {eta} anni."</span>)
+</code></pre>
+                </div>
+                
+                <p class="font-semibold text-sm mb-2">▶️ Esecuzione:</p>
+                <div class="terminal-block">
+$ python pratica1.py
+Inserisci il tuo nome: Mario
+In che anno sei nato? 1995
+
+Ciao Mario! Nel 2024 compi (o hai compiuto) 29 anni.
+                </div>
+            </div>
+        </section>
+
+        <!-- Modulo 2 -->
+        <section class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-2xl font-bold mb-4 flex items-center"><span class="step-number">2</span> Condizioni e Cicli</h2>
+            <p class="mb-4 text-gray-700">Le <strong>condizioni</strong> (<code>if/elif/else</code>) permettono al programma di prendere decisioni. I <strong>cicli</strong> (<code>for</code>) permettono di ripetere un'azione su una lista di elementi.</p>
+            
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-5 rounded-r-lg mt-6">
+                <h3 class="text-xl font-bold text-blue-800 mb-3">🛠️ Prova Pratica 2: Controllo Stato Server</h3>
+                <p class="mb-3 text-sm text-gray-700">Immaginiamo di avere una lista di server con stati diversi. Crea un file <strong><code>pratica2.py</code></strong>:</p>
+                
+                <div class="code-block">
+<pre><code><span class="comment"># Creiamo una lista con lo stato di 4 server</span>
+stati_server = [<span class="string">"running"</span>, <span class="string">"stopped"</span>, <span class="string">"running"</span>, <span class="string">"terminated"</span>]
+
+numero_server = <span class="string">1</span>
+
+<span class="comment"># Il ciclo for analizza un elemento alla volta dalla lista</span>
+<span class="keyword">for</span> stato <span class="keyword">in</span> stati_server:
+  <span class="function">print</span>(<span class="string">f"Analisi Server {numero_server}..."</span>)
+  
+  <span class="comment"># Condizioni logiche</span>
+  <span class="keyword">if</span> stato == <span class="string">"running"</span>:
+      <span class="function">print</span>(<span class="string">"  ✅ Il server è operativo."</span>)
+  <span class="keyword">elif</span> stato == <span class="string">"stopped"</span>:
+      <span class="function">print</span>(<span class="string">"  ⚠️ Il server è fermo. Ricordati di accenderlo."</span>)
+  <span class="keyword">else</span>:
+      <span class="function">print</span>(<span class="string">"  ❌ Il server è stato eliminato."</span>)
+      
+  numero_server += <span class="string">1</span>  <span class="comment"># Passiamo al server successivo</span>
+  <span class="function">print</span>(<span class="string">"-"</span> * <span class="string">30</span>) <span class="comment"># Stampa una linea separatrice</span>
+</code></pre>
+                </div>
+                
+                <p class="font-semibold text-sm mb-2">▶️ Esecuzione:</p>
+                <div class="terminal-block">
+$ python pratica2.py
+Analisi Server 1...
+✅ Il server è operativo.
+------------------------------
+Analisi Server 2...
+⚠️ Il server è fermo. Ricordati di accenderlo.
+------------------------------
+Analisi Server 3...
+✅ Il server è operativo.
+------------------------------
+Analisi Server 4...
+❌ Il server è stato eliminato.
+------------------------------
+                </div>
+            </div>
+        </section>
+
+        <!-- Modulo 3 -->
+        <section class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-2xl font-bold mb-4 flex items-center"><span class="step-number">3</span> Funzioni (Parametri in Ingresso e Uscita)</h2>
+            <p class="mb-4 text-gray-700">Le <strong>funzioni</strong> (definite con <code>def</code>) sono blocchi di codice riutilizzabili. Accettano dati in ingresso (<strong>parametri</strong>) e restituiscono un risultato in uscita (<strong>return</strong>).</p>
+            
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-5 rounded-r-lg mt-6">
+                <h3 class="text-xl font-bold text-blue-800 mb-3">🛠️ Prova Pratica 3: Convertitore di Temperatura</h3>
+                <p class="mb-3 text-sm text-gray-700">Crea una funzione che converte i gradi Celsius in Fahrenheit. Crea il file <strong><code>pratica3.py</code></strong>:</p>
+                
+                <div class="code-block">
+<pre><code><span class="comment"># Definizione della funzione</span>
+<span class="keyword">def</span> <span class="function">celsius_a_fahrenheit</span>(gradi_celsius):
+  <span class="comment"># gradi_celsius è il parametro in INGRESSO</span>
+  calcolo = (gradi_celsius * <span class="string">9/5</span>) + <span class="string">32</span>
+  <span class="keyword">return</span> calcolo  <span class="comment"># Il risultato in USCITA</span>
+
+<span class="comment"># Programma principale</span>
+<span class="function">print</span>(<span class="string">"--- Convertitore di Temperatura ---"</span>)
+temp_c = <span class="function">float</span>(<span class="function">input</span>(<span class="string">"Inserisci i gradi Celsius: "</span>))
+
+<span class="comment"># Chiamiamo la funzione e salviamo il risultato in una variabile</span>
+temp_f = <span class="function">celsius_a_fahrenheit</span>(temp_c)
+
+<span class="function">print</span>(<span class="string">f"{temp_c}°C corrispondono a {temp_f}°F"</span>)
+</code></pre>
+                </div>
+                
+                <p class="font-semibold text-sm mb-2">▶️ Esecuzione:</p>
+                <div class="terminal-block">
+$ python pratica3.py
+--- Convertitore di Temperatura ---
+Inserisci i gradi Celsius: 25
+25.0°C corrispondono a 77.0°F
+                </div>
+            </div>
+        </section>
+
+        <!-- Modulo 4 -->
+        <section class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-2xl font-bold mb-4 flex items-center"><span class="step-number">4</span> Moduli e Librerie</h2>
+            <p class="mb-4 text-gray-700">Python ha tantissimi <strong>moduli</strong> pronti all'uso (come <code>boto3</code> per AWS). Usiamo il comando <code>import</code> per includerli nel nostro script.</p>
+            
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-5 rounded-r-lg mt-6">
+                <h3 class="text-xl font-bold text-blue-800 mb-3">🛠️ Prova Pratica 4: Generatore di Password</h3>
+                <p class="mb-3 text-sm text-gray-700">Useremo il modulo <code>random</code> per creare una password sicura. Crea il file <strong><code>pratica4.py</code></strong>:</p>
+                
+                <div class="code-block">
+<pre><code><span class="keyword">import</span> random
+
+<span class="keyword">def</span> <span class="function">genera_password</span>(lunghezza):
+  caratteri_disponibili = <span class="string">"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%"</span>
+  password = <span class="string">""</span>
+  
+  <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(lunghezza):
+      <span class="comment"># Sceglie un carattere a caso e lo aggiunge alla password</span>
+      carattere_casuale = random.choice(caratteri_disponibili)
+      password += carattere_casuale
+      
+  <span class="keyword">return</span> password
+
+<span class="function">print</span>(<span class="string">"Generazione di 3 password sicure da 12 caratteri:"</span>)
+<span class="keyword">for</span> x <span class="keyword">in</span> <span class="function">range</span>(<span class="string">3</span>):
+  <span class="function">print</span>(<span class="string">f"Password {x+1}: {genera_password(12)}"</span>)
+</code></pre>
+                </div>
+                
+                <p class="font-semibold text-sm mb-2">▶️ Esecuzione (i risultati saranno diversi ogni volta!):</p>
+                <div class="terminal-block">
+$ python pratica4.py
+Generazione di 3 password sicure da 12 caratteri:
+Password 1: aB7!x9Qz$mP2
+Password 2: 9vL#kR4tY!w1
+Password 3: cX5$nB8mP@qL
+                </div>
+            </div>
+        </section>
+
+        <!-- Sfida Finale -->
+        <section class="bg-indigo-50 p-6 rounded-lg shadow-md border-l-4 border-indigo-600 mb-8">
+            <h2 class="text-2xl font-bold mb-4 text-indigo-900 flex items-center"><span class="mr-2">🏆</span> Sfida Finale: Simulatore di Deploy</h2>
+            <p class="mb-4 text-gray-800">Uniamo tutto quello che abbiamo imparato! Creeremo uno script che simula l'avvio di server cloud, utilizzando moduli, funzioni, cicli e condizioni. Crea il file <strong><code>sfida_finale.py</code></strong>:</p>
+            
+            <div class="code-block mb-4">
+<pre><code><span class="keyword">import</span> time
+<span class="keyword">import</span> random
+
+<span class="keyword">def</span> <span class="function">avvia_istanza_ec2</span>(nome_istanza):
+  <span class="function">print</span>(<span class="string">f"\n[AWS Simulato] Richiesta avvio per: {nome_istanza}"</span>)
+  
+  <span class="comment"># Simuliamo un tempo di attesa con un ciclo e il modulo time</span>
+  <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(<span class="string">3</span>, <span class="string">0</span>, -<span class="string">1</span>):
+      <span class="function">print</span>(<span class="string">f"Avvio in corso... {i} sec"</span>)
+      time.sleep(<span class="string">1</span>) <span class="comment"># Mette in pausa lo script per 1 secondo</span>
+      
+  <span class="comment"># Simuliamo un tasso di successo dell'80%</span>
+  probabilita_successo = random.randint(<span class="string">1</span>, <span class="string">10</span>)
+  
+  <span class="keyword">if</span> probabilita_successo <= <span class="string">8</span>:
+      <span class="keyword">return</span> <span class="string">"RUNNING"</span>
+  <span class="keyword">else</span>:
+      <span class="keyword">return</span> <span class="string">"FAILED"</span>
+
+<span class="comment"># --- PROGRAMMA PRINCIPALE ---</span>
+miei_server = [<span class="string">"Web-Server-1"</span>, <span class="string">"Database-Primario"</span>, <span class="string">"Cache-Server"</span>]
+
+<span class="function">print</span>(<span class="string">"Inizio procedura di deployment automatico..."</span>)
+
+<span class="keyword">for</span> server <span class="keyword">in</span> miei_server:
+  esito = <span class="function">avvia_istanza_ec2</span>(server)
+  
+  <span class="keyword">if</span> esito == <span class="string">"RUNNING"</span>:
+      <span class="function">print</span>(<span class="string">f"✅ SUCCESSO: L'istanza {server} è online!"</span>)
+  <span class="keyword">else</span>:
+      <span class="function">print</span>(<span class="string">f"❌ ERRORE: Impossibile avviare {server}. Contattare il supporto."</span>)
+
+<span class="function">print</span>(<span class="string">"\nDeployment terminato."</span>)
+</code></pre>
+            </div>
+            <p class="text-sm text-indigo-800">Esegui questo script con <code>python sfida_finale.py</code>. Noterai che il programma "aspetta" realmente 3 secondi per ogni server, simulando un'operazione reale. Inoltre, grazie al modulo <code>random</code>, a volte un server potrebbe fallire l'avvio!</p>
+        </section>
+
+        <!-- Footer -->
+        <footer class="text-center text-gray-500 text-sm mt-12 mb-4 border-t pt-6">
+            <p class="mb-2">Congratulazioni! Hai completato il Crash Course pratico di Python. 🎉</p>
+            <p>Materiale didattico a cura di <a href="https://www.marblemind.eu" target="_blank" class="text-blue-600 hover:text-blue-800 font-semibold transition-colors">MarbleMind</a></p>
+        </footer>
+
+    </div>
+</body>
+</html>
