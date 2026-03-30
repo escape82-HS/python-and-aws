@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sfide Pratiche Python | Marblemind</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            line-height: 1.6; 
+            color: #333; 
+            max-width: 950px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background-color: #f4f7f6;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3, h4 { color: #2c3e50; }
+        .header { 
+            text-align: center; 
+            margin-bottom: 40px; 
+            padding-bottom: 20px; 
+            border-bottom: 2px solid #eee; 
+        }
+        .exercise { 
+            background: #fafafa; 
+            border-left: 5px solid #8e44ad; /* Viola per le sfide */
+            padding: 20px; 
+            margin-bottom: 40px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .duration { 
+            display: inline-block;
+            background-color: #e74c3c; 
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+        .requirements-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .requirements-list li {
+            margin-bottom: 10px;
+            padding-left: 30px;
+            position: relative;
+        }
+        .requirements-list li::before {
+            content: "🎯";
+            position: absolute;
+            left: 0;
+        }
+        .hint-box {
+            background-color: #e8f4f8;
+            border-left: 4px solid #5bc0de;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .hint-box h4 { margin-top: 0; color: #31708f; margin-bottom: 10px;}
+        .footer { 
+            text-align: center; 
+            margin-top: 50px; 
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 0.9em; 
+            color: #777; 
+        }
+        a { color: #8e44ad; text-decoration: none; font-weight: bold; }
+        a:hover { text-decoration: underline; }
+        code {
+            background-color: #eef2f5;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            color: #c7254e;
+        }
+        .intro-box {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Laboratorio Pratico: Mettiti alla Prova!</h1>
+            <p>Materiale didattico a cura di <a href="http://www.marblemind.eu" target="_blank">www.marblemind.eu</a></p>
+            <p><em>Obiettivo: Consolidare l'uso di Liste, Dizionari, Cicli (For/While) e Input utente.</em></p>
+        </header>
+
+        <main>
+            <div class="intro-box">
+                <strong>⚠️ Attenzione: Modalità Sfida!</strong><br>
+                In questo laboratorio non troverai il codice già scritto da copiare. Avrai a disposizione una traccia e dei requisiti. Dovrai usare la logica e le nozioni apprese finora per scrivere lo script da zero. Se ti blocchi, leggi i suggerimenti nel box azzurro!
+            </div>
+
+            <!-- SFIDA 1 -->
+            <section class="exercise">
+                <h2>Sfida 1: Il Gestore della Lista della Spesa</h2>
+                <div class="duration">⏱️ Tempo consigliato: 15 minuti</div>
+                
+                <h3>Traccia:</h3>
+                <p>Scrivi un programma che permetta all'utente di creare una lista della spesa interattiva. Il programma deve continuare a chiedere all'utente cosa vuole comprare finché non decide di fermarsi. Alla fine, deve stampare l'elenco completo.</p>
+
+                <h3>Requisiti Tecnici:</h3>
+                <ul class="requirements-list">
+                    <li>Inizializza una <strong>lista</strong> vuota all'inizio dello script.</li>
+                    <li>Usa un ciclo <code>while</code> per chiedere continuamente all'utente un prodotto tramite <code>input()</code>.</li>
+                    <li>Aggiungi ogni prodotto inserito alla lista.</li>
+                    <li>Se l'utente digita la parola <code>"esci"</code> (o "stop"), il ciclo si deve interrompere.</li>
+                    <li>Terminato l'inserimento, usa un ciclo <code>for</code> per stampare a schermo tutti gli elementi della lista, uno per riga.</li>
+                </ul>
+
+                <div class="hint-box">
+                    <h4>💡 Aiuto / Hint</h4>
+                    <p>1. Per aggiungere un elemento in coda a una lista ricorda di usare il metodo <code>tua_lista.append(elemento)</code>.</p>
+                    <p>2. Per creare un ciclo infinito che si ferma solo con una condizione, puoi usare <code>while True:</code> e poi inserire un <code>if input_utente == "esci":</code> seguito dal comando <code>break</code>.</p>
+                </div>
+            </section>
+
+            <!-- SFIDA 2 -->
+            <section class="exercise">
+                <h2>Sfida 2: Il Registro Voti Scolastico</h2>
+                <div class="duration">⏱️ Tempo consigliato: 20 minuti</div>
+                
+                <h3>Traccia:</h3>
+                <p>Crea un programma per memorizzare i voti degli studenti di una classe e calcolare automaticamente la media generale alla fine dell'inserimento.</p>
+
+                <h3>Requisiti Tecnici:</h3>
+                <ul class="requirements-list">
+                    <li>Inizializza un <strong>dizionario</strong> vuoto. Le chiavi saranno i nomi degli studenti, i valori saranno i loro voti.</li>
+                    <li>Chiedi all'utente quanti studenti vuole inserire (es. 3).</li>
+                    <li>Usa un ciclo <code>for</code> che si ripeta un numero di volte pari al numero di studenti indicato.</li>
+                    <li>Ad ogni iterazione del ciclo, chiedi il <strong>nome</strong> dello studente e il suo <strong>voto</strong>, poi salvali nel dizionario.</li>
+                    <li>Finito il ciclo, calcola la media matematica di tutti i voti presenti nel dizionario e stampala a schermo.</li>
+                </ul>
+
+                <div class="hint-box">
+                    <h4>💡 Aiuto / Hint</h4>
+                    <p>1. Ricorda che <code>input()</code> restituisce sempre una stringa. Se chiedi "Quanti studenti?", devi convertirlo in intero con <code>int()</code> per poterlo usare in un <code>for i in range(...):</code>.</p>
+                    <p>2. Per aggiungere o aggiornare un elemento in un dizionario la sintassi è: <code>registro[nome_studente] = voto</code>.</p>
+                    <p>3. Per calcolare la media, puoi sommare tutti i valori del dizionario usando <code>sum(registro.values())</code> e dividere per la lunghezza del dizionario <code>len(registro)</code>.</p>
+                </div>
+            </section>
+
+            <!-- SFIDA 3 -->
+            <section class="exercise">
+                <h2>Sfida 3: Mini-Gestionale Magazzino</h2>
+                <div class="duration">⏱️ Tempo consigliato: 25 minuti</div>
+                
+                <h3>Traccia:</h3>
+                <p>Costruisci un sistema di ricerca per l'inventario di un negozio di elettronica. Il programma deve cercare un prodotto per nome e, se lo trova, permettere all'utente di aggiornarne la quantità in giacenza.</p>
+
+                <h3>Requisiti Tecnici:</h3>
+                <ul class="requirements-list">
+                    <li>Crea una <strong>lista di dizionari</strong>. Inserisci almeno 3 prodotti pre-impostati. Ogni dizionario deve avere le chiavi: <code>"nome"</code>, <code>"quantita"</code>, <code>"prezzo"</code>. <br><em>(Es. <code>[{"nome": "Mouse", "quantita": 10, "prezzo": 15.5}, {...}]</code>)</em></li>
+                    <li>Chiedi all'utente di inserire il nome del prodotto che sta cercando.</li>
+                    <li>Usa un ciclo per scorrere la lista. Controlla se il nome inserito corrisponde al valore della chiave <code>"nome"</code> di qualche dizionario.</li>
+                    <li>Se il prodotto <strong>non esiste</strong>, stampa "Prodotto non trovato".</li>
+                    <li>Se il prodotto <strong>esiste</strong>, stampa i suoi dettagli attuali. Poi chiedi all'utente la "Nuova quantità in magazzino" e aggiorna il valore nel dizionario.</li>
+                    <li>Stampa l'inventario completo aggiornato alla fine dello script.</li>
+                </ul>
+
+                <div class="hint-box">
+                    <h4>💡 Aiuto / Hint</h4>
+                    <p>1. Per capire se hai trovato il prodotto, puoi usare una variabile "bandiera" (flag) prima del ciclo: <code>trovato = False</code>. Se durante il ciclo <code>if prodotto["nome"] == ricerca:</code> si verifica, metti <code>trovato = True</code>.</p>
+                    <p>2. Per evitare problemi con le maiuscole/minuscole durante la ricerca, puoi usare il metodo <code>.lower()</code> sia sull'input dell'utente che sul nome del prodotto nel dizionario.</p>
+                </div>
+            </section>
+
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2024 - Corso Python ed AWS. Tutti i diritti riservati.</p>
+            <p>Hai completato le sfide? Scopri i prossimi step su <a href="http://www.marblemind.eu" target="_blank">www.marblemind.eu</a></p>
+        </footer>
+    </div>
+</body>
+</html>
